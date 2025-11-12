@@ -23,27 +23,34 @@ class YandexMapsParser:
         if self.headless:
             options.add_argument("--headless=new")
 
-        # Mobile emulation (Pixel 5-like)
-        mobile_user_agent = (
-            "Mozilla/5.0 (Linux; Android 11; Pixel 5) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+        # Десктопный User-Agent (Windows + Chrome)
+        desktop_user_agent = (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         )
-        mobile_emulation = {
-            "deviceMetrics": {"width": 412, "height": 915, "pixelRatio": 3.0},
-            "userAgent": mobile_user_agent
-        }
-        options.add_experimental_option("mobileEmulation", mobile_emulation)
 
-        # Общие опции
+        # Общие опции для десктопа
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--disable-gpu")
-        options.add_argument("--window-size=412,915")
+        options.add_argument("--window-size=1920,1080")  # Десктопное разрешение
+        options.add_argument("--start-maximized")  # Запуск в максимизированном окне
         options.add_argument("--disable-blink-features=AutomationControlled")
         options.add_experimental_option("excludeSwitches", ["enable-automation", "enable-logging"])
         options.add_experimental_option('useAutomationExtension', False)
-        options.add_argument(f'--user-agent={mobile_user_agent}')
+        options.add_argument(f'--user-agent={desktop_user_agent}')
 
+        # Дополнительные опции для лучшей скрытности
+        options.add_argument("--disable-extensions")
+        options.add_argument("--disable-plugins-discovery")
+        options.add_argument("--disable-background-timer-throttling")
+        options.add_argument("--disable-backgrounding-occluded-windows")
+        options.add_argument("--disable-renderer-backgrounding")
+        options.add_argument("--disable-features=TranslateUI")
+        options.add_argument("--disable-ipc-flooding-protection")
+        options.add_argument("--disable-renderer-backgrounding")
+
+        # Использование профиля Chrome если указан
         if self.chrome_profile_dir:
             if not os.path.exists(self.chrome_profile_dir):
                 raise ValueError(f"Chrome profile dir not found: {self.chrome_profile_dir}")
@@ -53,28 +60,50 @@ class YandexMapsParser:
 
         self.driver = webdriver.Chrome(options=options)
 
-        # Touch emulation через CDP
+        # Десктопные настройки через CDP
         try:
             self.driver.execute_cdp_cmd("Emulation.setDeviceMetricsOverride", {
-                "width": 412,
-                "height": 915,
-                "deviceScaleFactor": 3.0,
-                "mobile": True
+                "width": 1920,
+                "height": 1080,
+                "deviceScaleFactor": 1.0,
+                "mobile": False,  # Важно: false для десктопа
+                "screenWidth": 1920,
+                "screenHeight": 1080
             })
-            self.driver.execute_cdp_cmd("Emulation.setTouchEmulationEnabled", {"enabled": True})
+            # Отключаем touch эмуляцию для десктопа
+            self.driver.execute_cdp_cmd("Emulation.setTouchEmulationEnabled", {"enabled": False})
         except Exception:
             pass
 
-        # stealth-like инъекции
+        # Stealth инъекции для десктопа
         stealth_scripts = [
             "Object.defineProperty(navigator, 'webdriver', {get: () => undefined});",
             "Object.defineProperty(navigator, 'plugins', {get: () => [1,2,3,4,5]});",
             "Object.defineProperty(navigator, 'languages', {get: () => ['ru-RU', 'ru', 'en']});",
-            "const originalQuery = window.navigator.permissions.query; window.navigator.permissions.query = (parameters) => (parameters.name === 'notifications' ? Promise.resolve({ state: Notification.permission }) : originalQuery(parameters));"
+            "Object.defineProperty(navigator, 'platform', {get: () => 'Win32'});",
+            "Object.defineProperty(navigator, 'hardwareConcurrency', {get: () => 8});",
+            "Object.defineProperty(navigator, 'maxTouchPoints', {get: () => 0});",
+            "const originalQuery = window.navigator.permissions.query; window.navigator.permissions.query = (parameters) => (parameters.name === 'notifications' ? Promise.resolve({ state: Notification.permission }) : originalQuery(parameters));",
+            # Эмуляция WebGL для десктопа
+            "const getParameter = WebGLRenderingContext.getParameter; WebGLRenderingContext.prototype.getParameter = function(parameter) { if (parameter === 37445) { return 'Intel Open Source Technology Center'; } if (parameter === 37446) { return 'Mesa DRI Intel(R) HD Graphics'; } return getParameter(parameter); };"
         ]
+
         try:
             for script in stealth_scripts:
                 self.driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": script})
+        except Exception:
+            pass
+
+        # Дополнительные настройки для реалистичности
+        try:
+            # Устанавливаем часовой пояс
+            self.driver.execute_cdp_cmd("Emulation.setTimezoneOverride", {"timezoneId": "Europe/Moscow"})
+            # Устанавливаем геолокацию (Москва)
+            self.driver.execute_cdp_cmd("Emulation.setGeolocationOverride", {
+                "latitude": 55.7558,
+                "longitude": 37.6173,
+                "accuracy": 100
+            })
         except Exception:
             pass
 
@@ -124,13 +153,15 @@ class YandexMapsParser:
             return None
 
     def _get_rating(self):
-        elements = self.driver.find_elements(By.CLASS_NAME, "business-summary-rating-badge-view__rating-text")
-        if len(elements) >= 2:
-            first = elements[0].text
-            second = elements[2].text
-            return first + ',' + second
-        else:
-            return None
+        # elements = self.driver.find_elements(By.CLASS_NAME, "business-summary-rating-badge-view__rating-text")
+        elements = self.driver.find_elements(By.CLASS_NAME, "_y10azs")
+        # if len(elements) >= 2:
+        #     first = elements[0].text
+        #     second = elements[2].text
+        #     return first + ',' + second
+        # else:
+        #     return None
+        return elements[0].text
 
     def _get_reviews_count(self):
         try:

@@ -37,7 +37,8 @@ async def parse_organization(request: ParseRequest):
         data = await asyncio.get_event_loop().run_in_executor(
             None, 
             parser.parse_organization, 
-            request.url or f"https://yandex.ru/maps/org/{request.organization_id}/reviews/" #https://yandex.ru/maps/org/1014186377/reviews/
+            # request.url or f"https://yandex.ru/maps/org/{request.organization_id}/reviews/" #https://yandex.ru/maps/org/1014186377/reviews/
+            request.url or f"https://2gis.ru/spb/search/блитц%20тоннель/firm/5348552839380704/30.348079%2C59.880112?m=30.348041%2C59.880139%2F17.53" #https://yandex.ru/maps/org/1014186377/reviews/
         )
         
         return ParseResponse(success=True, data=data)
