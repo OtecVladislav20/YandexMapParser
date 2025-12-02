@@ -1,52 +1,52 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from app.parser import YandexMapsParser
-import asyncio
-import logging
+from fastapi import FastAPI
+from app.models import ParseRequest, ParseResponse
+from app.utils.executor import run_in_thread
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from app.parsers.yandex import YandexMapsParser
+from app.parsers.gis import GisParser
+from app.parsers.google import GoogleParser
+
+yandex = YandexMapsParser()
+gis = GisParser()
+google = GoogleParser()
 
 app = FastAPI(
-    title="Yandex Maps Parser API",
-    description="API для парсинга данных с Яндекс Карт",
+    title="Company Parser API",
     version="1.0.0"
 )
 
-class ParseRequest(BaseModel):
-    url: str
-    organization_id: str = None
-
-class ParseResponse(BaseModel):
-    success: bool
-    data: dict
-    error: str = None
-
-parser = YandexMapsParser()
-
 @app.get("/")
 async def root():
-    return {"message": "Yandex Maps Parser API"}
+    return {"message": "Parser API running!"}
 
-@app.post("/parse", response_model=ParseResponse)
-async def parse_organization(request: ParseRequest):
-    """
-    Парсинг данных организации с Яндекс Карт
-    """
-    try:
-        data = await asyncio.get_event_loop().run_in_executor(
-            None, 
-            parser.parse_organization, 
-            # request.url or f"https://yandex.ru/maps/org/{request.organization_id}/reviews/" #https://yandex.ru/maps/org/1014186377/reviews/
-            request.url or f"https://2gis.ru/spb/search/блитц%20тоннель/firm/5348552839380704/30.348079%2C59.880112?m=30.348041%2C59.880139%2F17.53" #https://yandex.ru/maps/org/1014186377/reviews/
-        )
-        
-        return ParseResponse(success=True, data=data)
-        
-    except Exception as e:
-        logger.error(f"Ошибка парсинга: {e}")
-        return ParseResponse(success=False, data={}, error=str(e))
 
 @app.get("/health")
-async def health_check():
-    return {"status": "healthy"}
+async def health():
+    return {"status": "ok"}
+
+
+@app.post("/parse/yandex", response_model=ParseResponse)
+async def parse_yandex(req: ParseRequest):
+    try:
+        data = await run_in_thread(yandex.parse, req.url)
+        return ParseResponse(success=True, data=data)
+    except Exception as e:
+        return ParseResponse(success=False, error=str(e))
+    
+
+@app.post("/parse/2gis", response_model=ParseResponse)
+async def parse_gis(req: ParseRequest):
+    try:
+        data = await run_in_thread(gis.parse, req.url)
+        return ParseResponse(success=True, data=data)
+    except Exception as e:
+        return ParseResponse(success=False, error=str(e))
+
+
+@app.post("/parse/google", response_model=ParseResponse)
+async def parse_google(req: ParseRequest):
+    try:
+        data = await run_in_thread(google.parse, req.url)
+        return ParseResponse(success=True, data=data)
+    except Exception as e:
+        return ParseResponse(success=False, error=str(e))

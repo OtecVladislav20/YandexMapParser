@@ -10,4 +10,7 @@ python -m venv venv
 pip install -r requirements.txt
 
 Для запуска локального сервера 
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn app.main:app --reload
+
+Ссылка для 2gis
+"https://2gis.ru/spb/firm/{id}" - "https://2gis.ru/spb/firm/5348552839380704"
