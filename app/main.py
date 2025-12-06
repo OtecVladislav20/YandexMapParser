@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 from app.models import ParseRequest, ParseResponse
 from app.utils.executor import run_in_thread
-
 from app.parsers.yandex import YandexMapsParser
 from app.parsers.gis import GisParser
 from app.parsers.google import GoogleParser
+
 
 yandex = YandexMapsParser()
 gis = GisParser()

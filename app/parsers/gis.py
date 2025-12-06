@@ -1,3 +1,4 @@
+from app.parsers.base import BaseParser
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -6,34 +7,19 @@ from selenium.webdriver.chrome.options import Options
 import time
 
 
-class GisParser:
-    def __init__(self):
-        self.driver = None
-    
-
-    def _init_driver(self):
+class GisParser(BaseParser):
+    def build_driver_options(self):
         options = Options()
         options.add_argument("--disable-gpu")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--window-size=1920,1080")
-        self.driver = webdriver.Chrome(options=options)
+        return options
 
-
-    def parse(self, url: str) -> dict:
-        self._init_driver()
-        self.driver.get(url)
-
-        data = {
-            'name': self.getName(),
-            'raiting': self.getRaiting(),
-            'count_reviews': self.getCountReviews(),
-            'reviews': self.getReviews(),
+    def extra_fields(self):
+        return {
+            # Добавляет дополнительные поля в парсинг
         }
-
-        self.driver.quit()
-        return data
-
 
     def getName(self):
         try:
@@ -47,7 +33,7 @@ class GisParser:
             return None
     
 
-    def getRaiting(self):
+    def getRating(self):
         try:
             el = WebDriverWait(self.driver, 10).until(
                 EC.presence_of_element_located(
