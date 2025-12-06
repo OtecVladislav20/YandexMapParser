@@ -28,7 +28,6 @@ class GisParser:
             'name': self.getName(),
             'raiting': self.getRaiting(),
             'count_reviews': self.getCountReviews(),
-            'website': self.getWebsite(),
             'reviews': self.getReviews(),
         }
 
@@ -70,34 +69,17 @@ class GisParser:
             return el.text
         except:
             return None
-    
-
-    def getWebsite(self):
-        try:
-            el = WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(
-                    (By.CSS_SELECTOR, "div._49kxlr a._1rehek")
-                )
-            )
-            return el.text
-        except:
-            return None
-        
 
 
     def openReviewsPage(self):
         try:
-            # находим таб именно по тексту, это 100% правильный вариант
             tab = WebDriverWait(self.driver, 10).until(
                 EC.presence_of_element_located(
                     (By.XPATH, "//a[contains(@href,'tab/reviews')]")
                 )
             )
 
-            # делаем элемент в зоне видимости
             self.driver.execute_script("arguments[0].scrollIntoView(true);", tab)
-
-            # теперь только кликаем
             self.driver.execute_script("arguments[0].click();", tab)
 
             WebDriverWait(self.driver, 10).until(
@@ -113,12 +95,9 @@ class GisParser:
         if not self.openReviewsPage():
             return []
     
-        import time
-    
         loaded = 0
         reviews = []
     
-        # скроллим страницу, но не до конца
         for _ in range(6):  
             self.driver.execute_script("window.scrollBy(0, 600)")
             time.sleep(0.4)
@@ -129,25 +108,50 @@ class GisParser:
                 if loaded >= limit:
                     return reviews
     
-                # получаем имя правильным способом
-                name_el = block.find_elements(By.CLASS_NAME, "_16s5yj36")
-                if name_el:
-                    name = name_el[0].get_attribute("textContent").strip()
-                else:
-                    continue
+                try:
+                    name_el = block.find_elements(By.CLASS_NAME, "_16s5yj36")
+                    if name_el:
+                        name = name_el[0].get_attribute("textContent").strip()
+                    else:
+                        name = None
+                except:
+                    name = None
                 
-                # получаем текст отзыва
-                text_el = block.find_elements(By.CLASS_NAME, "_1msln3t")
-                if text_el:
-                    text = text_el[0].get_attribute("textContent").strip()
-                else:
+                try:
+                    text_el = block.find_elements(By.CLASS_NAME, "_1msln3t")
+                    if text_el:
+                        text = text_el[0].get_attribute("textContent").strip()
+                    else:
+                        text = None
+                except:
                     text = None
+
+                try:
+                    rating_block = block.find_elements(By.CLASS_NAME, "_1fkin5c")
+                    if rating_block:
+                        raiting = len(rating_block[0].find_elements(By.TAG_NAME, "span"))
+                    else:
+                        raiting = None
+                except:
+                    raiting = None
+
+                try:
+                    avatar_el = block.find_element(By.CLASS_NAME, "_1dk5lq4")
+                    style = avatar_el.get_attribute("style")
+                    avatar = None
+                    if style and "background-image" in style:
+                        avatar = style.split("url(")[1].split(")")[0]
+                        avatar = avatar.replace('"', "").replace("'", "")
+                except:
+                    avatar = None
     
                 reviews.append({
                     "name": name,
                     "text": text,
+                    "raiting": raiting,
+                    "avatar": avatar,
                 })
     
                 loaded += 1
-    
         return reviews
+
