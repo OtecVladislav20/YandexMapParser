@@ -1,15 +1,23 @@
+import os
 from abc import ABC, abstractmethod
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
 
 class BaseParser(ABC):
-    def __init__(self):
+    def __init__(self, profile_id: str | None = None, profile_base: str | None = None):
+        self.profile_id = profile_id
+        self.profile_base = profile_base
         self.driver = None
 
     def init_driver(self):
         options = self.build_driver_options()
-        self.driver = webdriver.Chrome(options=options)
+        remote = os.getenv("SELENIUM_REMOTE_URL")
+        if remote:
+            options.add_argument("--user-data-dir=/home/seluser/chrome-profile")
+            self.driver = webdriver.Remote(command_executor=remote, options=options)
+        else:
+            self.driver = webdriver.Chrome(options=options)
     
     @abstractmethod
     def build_driver_options(self) -> Options:

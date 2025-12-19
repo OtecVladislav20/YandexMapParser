@@ -18,3 +18,9 @@ uvicorn app.main:app --reload --env-file .env
 
 Ссылка на ЯндексКарты 
 https://yandex.ru/maps/org/blits_tonnel/1014186377/reviews
+
+
+docker compose up -d
+
+docker compose exec -u root selenium bash -lc "chown -R seluser:seluser /home/seluser/chrome-profile && chmod -R u+rwX /home/seluser/chrome-profile"
+
