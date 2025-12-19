@@ -22,5 +22,11 @@ https://yandex.ru/maps/org/blits_tonnel/1014186377/reviews
 
 docker compose up -d
 
+Выдача прав
 docker compose exec -u root selenium bash -lc "chown -R seluser:seluser /home/seluser/chrome-profile && chmod -R u+rwX /home/seluser/chrome-profile"
 
+Создание папок для 5 воркеров
+docker compose exec -u root selenium bash -lc "for i in 0 1 2 3 4; do mkdir -p /home/seluser/chrome-profile/profile-$i; done; chown -R seluser:seluser /home/seluser/chrome-profile"
+
+Показать все ключи кеша (лучше, чем KEYS):
+docker compose exec redis redis-cli -a change_me --scan --pattern "cache:*"

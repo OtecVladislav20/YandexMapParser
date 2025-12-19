@@ -12,9 +12,14 @@ class BaseParser(ABC):
 
     def init_driver(self):
         options = self.build_driver_options()
+        profile_base = self.profile_base or os.getenv("CHROME_PROFILE_BASE")
+        if profile_base and self.profile_id:
+            base = profile_base.rstrip("/")
+            options.add_argument(f"--user-data-dir={base}/{self.profile_id}")
+            options.add_argument("--profile-directory=Default")
+
         remote = os.getenv("SELENIUM_REMOTE_URL")
         if remote:
-            options.add_argument("--user-data-dir=/home/seluser/chrome-profile")
             self.driver = webdriver.Remote(command_executor=remote, options=options)
         else:
             self.driver = webdriver.Chrome(options=options)

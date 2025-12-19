@@ -4,8 +4,11 @@ services:
     ports:
       - "8000:8000"
     environment:
+      PARSER_WORKERS: "5"
+      PARSER_QUEUE_MAX: "200"
+      CACHE_TTL_SECONDS: "259200"
       SELENIUM_REMOTE_URL: http://selenium:4444/wd/hub
-      PYTHONUNBUFFERED: "1"
+      CHROME_PROFILE_BASE: /home/seluser/chrome-profile
       REDIS_PASSWORD: ${REDIS_PASSWORD:-change_me}
     depends_on:
       - selenium
@@ -19,6 +22,8 @@ services:
       - "7900:7900"
     environment:
       SE_VNC_NO_PASSWORD: "1"
+      SE_NODE_MAX_SESSIONS: "5"
+      SE_NODE_OVERRIDE_MAX_SESSIONS: "true"
     volumes:
       - chrome-profile:/home/seluser/chrome-profile
 
