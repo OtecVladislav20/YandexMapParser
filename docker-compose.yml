@@ -9,7 +9,7 @@ services:
       CACHE_TTL_SECONDS: "259200"
       SELENIUM_REMOTE_URL: http://selenium:4444/wd/hub
       CHROME_PROFILE_BASE: /home/seluser/chrome-profile
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-change_me}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:root}
     depends_on:
       - selenium
       - redis
@@ -32,7 +32,7 @@ services:
     command: >
       redis-server
       --appendonly yes
-      --requirepass ${REDIS_PASSWORD:-change_me}
+      --requirepass ${REDIS_PASSWORD:root}
     ports:
       - "127.0.0.1:6379:6379"
     volumes:

@@ -11,7 +11,6 @@ pip install -r requirements.txt
 
 Для запуска локального сервера 
 uvicorn app.main:app --reload
-uvicorn app.main:app --reload --env-file .env
 
 Ссылка для 2gis
 "https://2gis.ru/spb/firm/{id}" - "https://2gis.ru/spb/firm/5348552839380704"

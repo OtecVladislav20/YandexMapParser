@@ -1,0 +1,4 @@
+POST http://155.212.187.80:8000/parse/yandex
+Content-Type: application/json
+
+{"url":"https://yandex.ru/maps/org/1014186377/reviews"}
