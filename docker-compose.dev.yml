@@ -5,6 +5,7 @@ services:
       - "8000:8000"
     environment:
       PORT: "8000"
+      NODE_ENV: development
 
       PARSER_WORKERS: "${PARSER_WORKERS:-5}"
       PARSER_QUEUE_MAX: "${PARSER_QUEUE_MAX:-200}"
@@ -16,6 +17,10 @@ services:
       REDIS_HOST: "redis"
       REDIS_PORT: "6379"
       REDIS_PASSWORD: "${REDIS_PASSWORD:-root}"
+    volumes:
+      - ./src:/app/src
+      - ./openapi.yml:/app/openapi.yml:ro
+    command: ["node", "--watch", "src/server.js"]
     depends_on:
       - selenium
       - redis

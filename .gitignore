@@ -1,19 +1,26 @@
-# Virtual environment
-venv/
-.venv/
+node_modules/
 
-# Python cache
-__pycache__/
-*.pyc
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
 
-# IDE
+.env
+.env.*.local
+
+dist/
+build/
+.out/
+coverage/
+.nyc_output/
+.cache/
+.tmp/
+temp/
+
+.DS_Store
+Thumbs.db
 .vscode/
 .idea/
 
-# Data
-/data/
-/temp/
-/output/
-
-# Environment variables
-.env
+*.pid
