@@ -1,4 +1,51 @@
-POST http://155.212.187.80:8000/parse/yandex
+@baseUrl = http://localhost:8000
+@contentType = application/json
+
+### Health
+GET {{baseUrl}}/health
+
+### Yandex: 1014186377
+POST http://localhost:8000/parse/yandex
 Content-Type: application/json
 
 {"url":"https://yandex.ru/maps/org/1014186377/reviews"}
+
+### Yandex: 1063218042
+POST {{baseUrl}}/parse/yandex
+Content-Type: {{contentType}}
+
+{
+  "url": "https://yandex.ru/maps/org/1063218042/reviews"
+}
+
+### Yandex: 60623676946
+POST {{baseUrl}}/parse/yandex
+Content-Type: {{contentType}}
+
+{
+  "url": "https://yandex.ru/maps/org/60623676946/reviews"
+}
+
+### Yandex: 96988795267
+POST {{baseUrl}}/parse/yandex
+Content-Type: {{contentType}}
+
+{
+  "url": "https://yandex.ru/maps/org/96988795267/reviews"
+}
+
+### Yandex: 1571721771
+POST {{baseUrl}}/parse/yandex
+Content-Type: {{contentType}}
+
+{
+  "url": "https://yandex.ru/maps/org/1571721771/reviews"
+}
+
+### Yandex: 18963796235
+POST {{baseUrl}}/parse/yandex
+Content-Type: {{contentType}}
+
+{
+  "url": "https://yandex.ru/maps/org/18963796235/reviews"
+}

@@ -15,6 +15,10 @@ export async function parseYandex(url, profileId) {
         await driver.get(url);
         
         const name = await tryText(driver, By.css("h1"));
+        if (name && /not a robot|не робот|подтверд/i.test(name)) {
+          throw new Error("Вышла капча! Нужно подтвертить в виртуальном интерфейсе и снова отправить запрос!");
+        }
+
         let rating = null;
         try {
             const els = await driver.findElements(By.className("business-summary-rating-badge-view__rating-text"));

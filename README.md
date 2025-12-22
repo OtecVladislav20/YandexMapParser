@@ -15,3 +15,9 @@ docker compose exec -u root selenium bash -c 'for i in 0 1 2 3 4; do mkdir -p /h
 
 Посмотреть логи 
 docker compose logs -f api
+
+Очистка базы редис
+docker compose exec redis redis-cli -a root FLUSHALL
+
+Перезапуск контейнера
+docker compose -f docker-compose.yml -f docker-compose.dev.yml restart api

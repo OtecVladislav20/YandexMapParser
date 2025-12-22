@@ -17,10 +17,13 @@ services:
       REDIS_HOST: "redis"
       REDIS_PORT: "6379"
       REDIS_PASSWORD: "${REDIS_PASSWORD:-root}"
+
+      LOG_FILE: /app/logs/api.log
     volumes:
       - ./src:/app/src
       - ./openapi.yml:/app/openapi.yml:ro
-    command: ["node", "--watch", "src/server.js"]
+      - ./logs:/app/logs
+    command: ["node", "--watch", "--watch-path=src", "--watch-path=openapi.yml", "src/server.js"]
     depends_on:
       - selenium
       - redis

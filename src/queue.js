@@ -3,9 +3,10 @@ import { parseYandex } from "./parsers/yandex.js";
 import { parse2gis } from "./parsers/gis.js";
 
 
-export function createQueue({ redis, profilePool }) {
+export function createQueue({ redis, profilePool, baseLogger}) {
+    const logger = baseLogger;
     const CACHE_TTL_SECONDS = Number(process.env.CACHE_TTL_SECONDS ?? String(3 * 24 * 3600));
-    const PARSER_QUEUE_MAX = Number(process.env.PARSER_QUEUE_MAX ?? "200");
+    const PARSER_QUEUE_MAX = Number(process.env.PARSER_QUEUE_MAX ?? "300");
 
     const inFlight = new Map();
 
@@ -23,7 +24,8 @@ export function createQueue({ redis, profilePool }) {
 
     async function enqueue(pqueue, kind, url) {
         const key = cacheKey(kind, url);
-        
+        logger.info({ key, kind }, "Получен ключ для кеширования");
+
         if (redis) {
             const cached = await redis.get(key);
             if (cached) return JSON.parse(cached);
@@ -40,6 +42,14 @@ export function createQueue({ redis, profilePool }) {
             const profileId = await profilePool.acquire();
             try {
                 const data = await runJob(kind, url, profileId);
+
+                if (
+                    kind === "yandex" &&
+                    data?.name && /not a robot|не робот|подтверд/i.test(data.name)
+                ) {
+                    throw new Error("captcha_required");
+                }
+
                 if (redis) await redis.set(key, JSON.stringify(data), { EX: CACHE_TTL_SECONDS });
                 return data;
             } finally {
