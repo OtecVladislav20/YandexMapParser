@@ -19,5 +19,5 @@ docker compose logs -f api
 Очистка базы редис
 docker compose exec redis redis-cli -a root FLUSHALL
 
-Перезапуск контейнера
+Перезапуск контейнера после изменений
 docker compose -f docker-compose.yml -f docker-compose.dev.yml restart api

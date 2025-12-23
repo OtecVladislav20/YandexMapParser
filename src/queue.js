@@ -5,8 +5,8 @@ import { parse2gis } from "./parsers/gis.js";
 
 export function createQueue({ redis, profilePool, baseLogger}) {
     const logger = baseLogger;
-    const CACHE_TTL_SECONDS = Number(process.env.CACHE_TTL_SECONDS ?? String(3 * 24 * 3600));
-    const PARSER_QUEUE_MAX = Number(process.env.PARSER_QUEUE_MAX ?? "300");
+    const CACHE_TTL_SECONDS = Number(process.env.CACHE_TTL_SECONDS);
+    const PARSER_QUEUE_MAX = Number(process.env.PARSER_QUEUE_MAX);
 
     const inFlight = new Map();
 
@@ -28,41 +28,49 @@ export function createQueue({ redis, profilePool, baseLogger}) {
 
         if (redis) {
             const cached = await redis.get(key);
-            if (cached) return JSON.parse(cached);
+            if (cached) {
+                logger.info({ key, kind }, "Ключ найден в кеше");
+                return JSON.parse(cached);
+            }
         }
 
         const existing = inFlight.get(key);
-        if (existing) return await existing;
+        if (existing) {
+            logger.info({ key, kind }, "Такой запрос уже в процессе выполнения, ждем его завершения");
+            return await existing;
+        }
 
         if (pqueue.pending + pqueue.size >= PARSER_QUEUE_MAX) {
+            logger.fatal({ key, kind }, 'Превышен максимальный размер очереди парсеров');
             throw new Error("queue_full");
         }
 
         const promise = pqueue.add(async () => {
             const profileId = await profilePool.acquire();
+            logger.info({ profileId }, `Начинаем парсинг с профилем воркера: ${profileId}`);
             try {
                 const data = await runJob(kind, url, profileId);
-
-                if (
-                    kind === "yandex" &&
-                    data?.name && /not a robot|не робот|подтверд/i.test(data.name)
-                ) {
-                    throw new Error("captcha_required");
+                if (redis) {
+                    await redis.set(key, JSON.stringify(data), { EX: CACHE_TTL_SECONDS });
+                    logger.info({ data }, "Данные сохранены в кеше");
                 }
-
-                if (redis) await redis.set(key, JSON.stringify(data), { EX: CACHE_TTL_SECONDS });
                 return data;
             } finally {
                 profilePool.release(profileId);
+                logger.info({ profileId }, `Профиль воркера ${profileId} освобожден`);
             }
         });
 
         inFlight.set(key, promise);
+        logger.info({ key, kind, inflight_size: inFlight.size }, "Запрос в очереди выполнения");
 
         try {
             return await promise;
         } finally {
-            if (inFlight.get(key) === promise) inFlight.delete(key);
+            if (inFlight.get(key) === promise) { 
+                inFlight.delete(key);
+                logger.info({ key, kind, inflight_size: inFlight.size }, "Запрос удален из очереди выполнения");
+            }
         }
     }
 

@@ -1,6 +1,7 @@
 import { By, until } from "selenium-webdriver";
 import { withDriver } from "../selenium.js";
 
+
 async function tryText(driver, locator, timeoutMs = 10000) {
     try {
         const el = await driver.wait(until.elementLocated(locator), timeoutMs);
@@ -13,10 +14,17 @@ async function tryText(driver, locator, timeoutMs = 10000) {
 export async function parseYandex(url, profileId) {
     return await withDriver(profileId, async (driver) => {
         await driver.get(url);
-        
-        const name = await tryText(driver, By.css("h1"));
-        if (name && /not a robot|не робот|подтверд/i.test(name)) {
-          throw new Error("Вышла капча! Нужно подтвертить в виртуальном интерфейсе и снова отправить запрос!");
+
+        let name = await tryText(driver, By.css("h1"));
+
+        const CAPTCHA_RE = /not a robot|не робот|подтверд/i;
+
+        if (name && CAPTCHA_RE.test(name)) {
+            await driver.sleep(20000);
+            name = await tryText(driver, By.css("h1"));
+            if (name && CAPTCHA_RE.test(name)) {
+                throw new Error("captcha_required");
+            }
         }
 
         let rating = null;

@@ -54,11 +54,11 @@ async function handleParse(req, res, kind) {
 
     try {
         const data = await enqueue(pqueue, kind, url, req.log);
-        req.log.info({ kind, ms: Date.now() - started }, "Запрос успешно обработан");
+        req.log.info({ kind, ms: Date.now() - started }, "Запрос обрабатывается");
         return res.json({ success: true, data, error: null });
     } catch (e) {
         const msg = e?.message ?? String(e);
-        req.log.warn({ kind, err: msg, ms: Date.now() - started }, "Вышла ошибка");
+        req.log.warn({ kind, err: msg, ms: Date.now() - started }, "Поймана ошибка при обработке запроса");
         return res.status(msg === "queue_full" ? 429 : 500).json({ success: false, data: null, error: msg });
     }
 }
