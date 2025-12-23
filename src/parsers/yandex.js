@@ -11,6 +11,24 @@ async function tryText(driver, locator, timeoutMs = 10000) {
     }
 }
 
+function normalizeText(s) {
+    if (!s) return null;
+    const t = String(s).replace(/\s+/g, " ").trim();
+    return t.length ? t : null;
+}
+
+async function getFullTextReview(driver, block) {
+    try {
+        const moreButton = await block.findElement(By.css(".spoiler-view__button .business-review-view__expand"));
+        if (moreButton) {
+            await driver.executeScript("arguments[0].click();", moreButton);
+            await driver.sleep(500);
+        }
+    } catch {
+        return false;
+    }
+}
+
 export async function parseYandex(url, profileId) {
     return await withDriver(profileId, async (driver) => {
         await driver.get(url);
@@ -36,7 +54,9 @@ export async function parseYandex(url, profileId) {
             rating = merged.length ? merged : null;
         } catch {}
 
-        const countReviews = await tryText(driver, By.className("business-rating-amount-view"));
+        // TODO
+        // const countReviews = (await driver.findElement(By.css(".business-rating-amount-view._summary")).getText()).trim();
+        const countReviews = await tryText(driver, By.css(".business-rating-amount-view._summary"));
 
         for (let i = 0; i < 5; i++) {
             await driver.executeScript("window.scrollBy(0, 800)");
@@ -45,19 +65,24 @@ export async function parseYandex(url, profileId) {
 
         const blocks = await driver.findElements(By.css("div.business-review-view"));
         const reviews = [];
-        for (const block of blocks.slice(0, 10)) {
+        for (const block of blocks.slice(0, 20)) {
             let reviewerName = null;
             let text = null;
             let avatar = null;
             let raiting = null;
+            let date = null;
             
             try {
                 reviewerName = (await block.findElement(By.css("[itemprop='name']")).getText()).trim();
             } catch {}
           
             try {
-                text = (await block.findElement(By.css(".spoiler-view__text-container")).getText()).trim();
-            } catch {}
+                await getFullTextReview(driver, block);
+                const textEl = await block.findElement(By.css(".spoiler-view__text-container"));
+                text = normalizeText(await textEl.getAttribute("textContent"));
+            } catch {
+                text = null;
+            }
           
             try {
                 const stars = await block.findElements(By.css(".business-rating-badge-view__star._full"));
@@ -71,8 +96,12 @@ export async function parseYandex(url, profileId) {
                   avatar = style.split("url(")[1].split(")")[0].replace(/["']/g, "");
                 }
             } catch {}
+
+            try {
+                date = await block.findElement(By.css('.business-review-view__date span')).getText();
+            } catch {}
           
-            reviews.push({ name: reviewerName, raiting, text, avatar });
+            reviews.push({ name: reviewerName, raiting, text, avatar, date });
         }
 
         return { name, rating, count_reviews: countReviews, reviews };
