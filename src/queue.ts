@@ -1,28 +1,48 @@
+import type PQueue from "p-queue";
+import type { Logger } from "pino";
+import type { RedisClientType, RedisModules, RedisFunctions, RedisScripts } from "redis";
 import { cacheKey } from "./cache.js";
+import { ProfilePool } from "./profilePool.js";
 import { parseYandex } from "./parsers/yandex.js";
 import { parse2gis } from "./parsers/gis.js";
+import { ParserKind } from "./types/parser-kind.js";
+import { parseAboutDoctors } from "./parsers/about-doctors.js";
 
 
-export function createQueue({ redis, profilePool, baseLogger}) {
+type ParseResult = {
+    name: string | null;
+    rating: string | null;
+    count_reviews: string | null;
+    reviews: unknown[];
+};
+
+type QueueDeps = {
+    redis?: RedisClientType<RedisModules, RedisFunctions, RedisScripts>;
+    profilePool: ProfilePool;
+    baseLogger: Logger;
+};
+
+export function createQueue({ redis, profilePool, baseLogger}: QueueDeps) {
     const logger = baseLogger;
     const CACHE_TTL_SECONDS = Number(process.env.CACHE_TTL_SECONDS);
     const PARSER_QUEUE_MAX = Number(process.env.PARSER_QUEUE_MAX);
 
     const inFlight = new Map();
 
-    function queueStats(pqueue) {
+    function queueStats(pqueue: PQueue) {
         return {
             pending: pqueue.pending,
             size: pqueue.size
         };
     }
 
-    async function runJob(kind, url, profileId) {
+    async function runJob(kind: ParserKind, url: string, profileId: string): Promise<ParseResult> {
         if (kind === "yandex") return await parseYandex(url, profileId);
         if (kind === "2gis") return await parse2gis(url, profileId);
+        return await parseAboutDoctors(url, profileId);
     }
 
-    async function enqueue(pqueue, kind, url) {
+    async function enqueue(pqueue: PQueue, kind: ParserKind, url: string): Promise<ParseResult> {
         const key = cacheKey(kind, url);
         logger.info({ key, kind }, "Получен ключ для кеширования");
 
@@ -45,7 +65,7 @@ export function createQueue({ redis, profilePool, baseLogger}) {
             throw new Error("queue_full");
         }
 
-        const promise = pqueue.add(async () => {
+        const promise: Promise<ParseResult> = pqueue.add(async () => {
             const profileId = await profilePool.acquire();
             logger.info({ profileId }, `Начинаем парсинг с профилем воркера: ${profileId}`);
             try {

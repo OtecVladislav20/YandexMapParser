@@ -1,7 +1,7 @@
 import crypto from "crypto";
 
 
-export function extractOrgId(kind, url) {
+export function extractOrgId(kind: string, url: string) {
     if (kind === "2gis") {
         const m = url.match(/\/firm\/(\d+)/);
         return m?.[1] ?? null;
@@ -12,10 +12,14 @@ export function extractOrgId(kind, url) {
         m = url.match(/oid=(\d+)/);
         return m?.[1] ?? null;
     }
+    if (kind === "doctors") {
+      const m = url.match(/\/lpu\/([^/?#]+)(?:\/|$)/);
+      return m?.[1] ?? null;
+    }
     return null;
 }
 
-export function cacheKey(kind, url) {
+export function cacheKey(kind: string, url: string) {
     const orgId = extractOrgId(kind, url);
     if (orgId) return `cache:${kind}:org:${orgId}`;
     const sha1 = crypto.createHash("sha1").update(url, "utf8").digest("hex");

@@ -20,4 +20,5 @@ docker compose logs -f api
 docker compose exec redis redis-cli -a root FLUSHALL
 
 Перезапуск контейнера после изменений
-docker compose -f docker-compose.yml -f docker-compose.dev.yml restart api
+docker compose up -d --build --force-recreate api
+

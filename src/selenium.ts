@@ -1,8 +1,8 @@
-import { Builder } from "selenium-webdriver";
+import { Builder, type WebDriver } from "selenium-webdriver";
 import chrome from "selenium-webdriver/chrome.js";
 
 
-export async function createDriver(profileId) {
+export async function createDriver(profileId: string) {
     const remoteUrl = process.env.SELENIUM_REMOTE_URL;
     if (!remoteUrl) throw new Error("SELENIUM_REMOTE_URL не задан");
 
@@ -15,7 +15,8 @@ export async function createDriver(profileId) {
     );
 
     const base = process.env.CHROME_PROFILE_BASE;
-    if (base && profileId) {
+
+    if (base) {
         options.addArguments(`--user-data-dir=${base.replace(/\/$/, "")}/${profileId}`);
         options.addArguments("--profile-directory=Default");
     }
@@ -29,7 +30,10 @@ export async function createDriver(profileId) {
     return driver;
 }
 
-export async function withDriver(profileId, fn) {
+export async function withDriver<T>(
+    profileId: string,
+    fn: (driver: WebDriver) => Promise<T>
+): Promise<T> {
     const driver = await createDriver(profileId);
     try {
         return await fn(driver);

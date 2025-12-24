@@ -36,6 +36,19 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ParseResponse" }
+  /parse/doctors:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ParseRequest" }
+      responses:
+        "200":
+          description: Parse result
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ParseResponse" }
 
 components:
   schemas:

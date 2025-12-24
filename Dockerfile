@@ -1,14 +1,27 @@
-FROM node:20-slim
-
+FROM node:20-slim AS base
 WORKDIR /app
+COPY package.json package-lock.json ./
+
+FROM base AS deps
+RUN npm ci
+
+FROM deps AS dev
+COPY . .
+CMD ["npm", "run", "dev"]
+
+FROM deps AS build
+COPY . .
+RUN npm run build
+
+FROM node:20-slim AS prod
+WORKDIR /app
+ENV NODE_ENV=production
 
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
-COPY src ./src
+COPY --from=build /app/dist ./dist
 COPY openapi.yml ./openapi.yml
 
-ENV NODE_ENV=production
 EXPOSE 8000
-
-CMD ["node", "src/server.js"]
+CMD ["node", "dist/server.js"]

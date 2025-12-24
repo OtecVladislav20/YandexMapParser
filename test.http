@@ -49,3 +49,34 @@ Content-Type: {{contentType}}
 {
   "url": "https://yandex.ru/maps/org/18963796235/reviews"
 }
+
+
+
+
+### 2gis: 5348552839380704
+POST {{baseUrl}}/parse/2gis
+Content-Type: {{contentType}}
+
+{
+  "url": "https://2gis.ru/spb/firm/5348552839380704"
+}
+
+
+
+
+
+### Doctors: 108066-duet-klinik-na-potaninskoy
+POST {{baseUrl}}/parse/doctors
+Content-Type: {{contentType}}
+
+{
+  "url": "https://prodoctorov.ru/novosibirsk/lpu/108066-duet-klinik-na-potaninskoy/"
+}
+
+### Doctors: 93455-dostupnaya-medicina
+POST {{baseUrl}}/parse/doctors
+Content-Type: {{contentType}}
+
+{
+  "url": "https://prodoctorov.ru/novosibirsk/lpu/93455-dostupnaya-medicina/"
+}
