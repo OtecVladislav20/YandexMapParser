@@ -12,6 +12,9 @@ import { createRedis } from "./redis.js";
 import { createQueue } from "./queue.js";
 import { logger } from "./logger.js";
 import { ParserKind } from "./types/parser-kind.js";
+import { ParsedQs } from "qs";
+import { getQueryParameters, ResponseQueryParameters } from "./http/parseQuery.js";
+import { applyResponseOptions } from "./http/applyResponseOptions.js";
 
 
 type ParseRequestBody = { url?: string };
@@ -65,10 +68,17 @@ async function handleParse(
         return res.status(400).json({ success: false, data: null, error: "Некорректный url" });
     }
 
+    const parsed = getQueryParameters(req.query);
+    if (!parsed.ok) {
+        return res.status(400).json({ success: false, data: null, error: parsed.error });
+    }
+    const opts: ResponseQueryParameters = parsed.value;
+
     try {
         const data = await enqueue(pqueue, kind, url);
         req.log.info({ kind, ms: Date.now() - started }, "Запрос обработан");
-        return res.json({ success: true, data, error: null });
+        const out = applyResponseOptions(data, opts);
+        return res.json({ success: true, data: out, error: null });
     } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : String(e);
         req.log.warn({ kind, err: msg, ms: Date.now() - started }, "Ошибка при обработке запроса");
@@ -89,3 +99,4 @@ app.post("/parse/doctors", (req: Request<{}, any, ParseRequestBody>, res) => {
 });
 
 app.listen(PORT, () => console.log(`API listening on :${PORT}`));
+

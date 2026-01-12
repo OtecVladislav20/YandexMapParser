@@ -51,6 +51,13 @@ Content-Type: {{contentType}}
   "url": "https://yandex.ru/maps/org/18963796235/reviews"
 }
 
+################################## Yandex Query parameters #######################################
+
+### Yandex: 1014186377
+POST http://localhost:8000/parse/yandex?count=5
+Content-Type: application/json
+
+{"url":"https://yandex.ru/maps/org/1014186377/reviews"}
 
 
 
@@ -77,6 +84,17 @@ Content-Type: {{contentType}}
 {
   "url": "https://2gis.ru/ekaterinburg/firm/1267165676605507"
 }
+
+################################## 2GIS Query parameters #######################################
+
+### 2gis: 1267165676605507
+POST {{baseUrl}}/parse/2gis?count=5
+Content-Type: {{contentType}}
+
+{
+  "url": "https://2gis.ru/ekaterinburg/firm/1267165676605507"
+}
+
 
 
 
