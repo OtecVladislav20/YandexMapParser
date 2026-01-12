@@ -3,8 +3,8 @@ info:
   title: Parser API
   version: 3.0.0
 servers:
-  # - url: http://localhost:8000
-  - url: http://155.212.187.80:8000
+  - url: http://localhost:8000
+  # - url: http://155.212.187.80:8000
 paths:
   /health:
     get:

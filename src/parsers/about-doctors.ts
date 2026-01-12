@@ -1,4 +1,4 @@
-import { By, until, WebElement } from "selenium-webdriver";
+import { By, until } from "selenium-webdriver";
 import { withDriver } from "../selenium.js";
 import { AbstractParser } from "./abstarctParser.js";
 import { logger } from "../logger.js";

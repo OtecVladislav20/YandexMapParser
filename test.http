@@ -4,6 +4,7 @@
 ### Health
 GET {{baseUrl}}/health
 
+
 ### Yandex: 1014186377
 POST http://localhost:8000/parse/yandex
 Content-Type: application/json
@@ -61,6 +62,13 @@ Content-Type: {{contentType}}
   "url": "https://2gis.ru/spb/firm/5348552839380704"
 }
 
+### 2gis: 1267165676897334
+POST {{baseUrl}}/parse/2gis
+Content-Type: {{contentType}}
+
+{
+  "url": "https://2gis.ru/ekaterinburg/firm/1267165676897334"
+}
 
 
 
