@@ -70,12 +70,12 @@ Content-Type: {{contentType}}
   "url": "https://2gis.ru/ekaterinburg/firm/1267165676897334"
 }
 
-### 2gis: 1267165676716366
+### 2gis: 1267165676605507
 POST {{baseUrl}}/parse/2gis
 Content-Type: {{contentType}}
 
 {
-  "url": "https://2gis.ru/ekaterinburg/firm/1267165676716366"
+  "url": "https://2gis.ru/ekaterinburg/firm/1267165676605507"
 }
 
 

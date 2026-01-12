@@ -88,6 +88,14 @@ class GisParser extends AbstractParser {
 		  `, scrollEl, screens);
 		};
 
+		const bounceUp = async (px = 250) => {
+		  await this.driver.executeScript(
+		    "const el = arguments[0]; const px = arguments[1]; el.scrollTop = Math.max(0, el.scrollTop - px);",
+		    scrollEl,
+		    px
+		  );
+		};
+
 		const seen = new Set<string>();
 		const reviews: Array<{
           	name: string | null;
@@ -166,8 +174,9 @@ class GisParser extends AbstractParser {
 			const beforeKey = await getLastKeyFast();
 
 			for (let i = 0; i < 6; i++) {
-			  	await wheelStep(3);
-			  	await this.driver.sleep(80);
+			  await wheelStep(3);
+			  await bounceUp(200);
+			  await this.driver.sleep(60);
 			}
 
 			const progressed = await this.driver
