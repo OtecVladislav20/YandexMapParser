@@ -80,7 +80,7 @@ class YandexParser extends AbstractParser {
         let stalled = 0;
         let lastMax = await getMaxPosSafe();
       
-        while (reviews.length < REVIEW_LIMIT && stalled < 8) {
+        while (reviews.length < REVIEW_LIMIT && stalled < 9) {
             const cards = await reviewsContainer.findElements(By.css('.business-reviews-card-view__review'));
             
             let added = 0;
@@ -144,7 +144,7 @@ class YandexParser extends AbstractParser {
                 reviews.push({ name: reviewerName, raiting, text, avatar, date });
                 added++;
             }
-        
+
             const before = lastMax;
 
             if (cards.length) {
@@ -154,7 +154,7 @@ class YandexParser extends AbstractParser {
             }
 
             const progressed = await this.driver
-              .wait(async () => (await getMaxPosSafe()) > before, 6000)
+              .wait(async () => (await getMaxPosSafe()) > before, 5000)
               .catch(() => false);
         
             const after = await getMaxPosSafe();

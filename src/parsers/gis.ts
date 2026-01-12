@@ -62,65 +62,31 @@ class GisParser extends AbstractParser {
 		const ok = await this.openReviewsPage();
 		if (!ok) return [];
 
-		const anchor = await this.waitLocated(By.css("._1k5soqfl"), 10000);
+		const scrollEl = await this.waitLocated(By.css('._jdkjbol'), 10000);
 
-		const chain = await this.driver.executeScript(`
-		  const el = arguments[0];
-		  const out = [];
-		  for (let n = el; n; n = n.parentElement) {
-		    const s = getComputedStyle(n);
-		    out.push({
-		      tag: n.tagName,
-		      cls: n.className,
-		      oy: s.overflowY,
-		      o: s.overflow,
-		      top: n.scrollTop,
-		      ch: n.clientHeight,
-		      sh: n.scrollHeight
-		    });
-		    if (n === document.body) break;
-		  }
-		  return out;
-		`, anchor);
+		const getLastKeyFast = async () =>
+  			(await this.driver.executeScript(`
+  			  const root = arguments[0];
+  			  const cards = root.querySelectorAll('._1k5soqfl');
+  			  const last = cards[cards.length - 1];
+  			  if (!last) return null;
+  			  const name = last.querySelector('._16s5yj36')?.textContent?.trim() ?? '';
+  			  const date = (last.querySelector('._a5f6uz')?.textContent ?? '').split(',')[0].trim();
+  			  const text = last.querySelector('._49x36f')?.textContent?.trim() ?? '';
+  			  const stars = last.querySelectorAll('._1fkin5c > span').length;
+  			  return name + '||' + date + '||' + stars + '||' + text;
+  			`, scrollEl)) as string | null;
 
-		logger.warn({ chain }, "2gis scroll parents");
 
-		const scrollEl = (await this.driver.executeScript(`
-		  let n = arguments[0];
-		  let best = null;
-		  let bestDelta = 0;
-
-		  while (n && n !== document.body) {
-		    const delta = (n.scrollHeight || 0) - (n.clientHeight || 0);
-		    if (delta > bestDelta) { bestDelta = delta; best = n; }
-		    n = n.parentElement;
-		  }
-
-		  return best || document.scrollingElement || document.documentElement;
-		`, anchor)) as WebElement;
-
-		const getScrollInfo = async () =>
-  		(await this.driver.executeScript(
-  		  `const el=arguments[0]; const s=getComputedStyle(el);
-  		   return {top: el.scrollTop, ch: el.clientHeight, sh: el.scrollHeight, oy: s.overflowY, o: s.overflow};`,
-  		  scrollEl
-  		)) as { top: number; ch: number; sh: number; oy: string; o: string };
-
-		const wheelScroll = async (deltaY = 900) => {
-		  await this.driver.executeScript(
-		    `const el=arguments[0], dy=arguments[1];
-		     el.dispatchEvent(new WheelEvent('wheel', {deltaY: dy, bubbles: true, cancelable: true}));
-		     el.scrollTop = el.scrollTop + dy;`,
-		    scrollEl,
-		    deltaY
-		  );
+		const wheelStep = async (screens = 2) => {
+		  await this.driver.executeScript(`
+		    const el = arguments[0];
+		    const screens = arguments[1];
+		    const dy = Math.floor(el.clientHeight * screens);
+		    el.dispatchEvent(new WheelEvent('wheel', { deltaY: dy, bubbles: true, cancelable: true }));
+		    try { el.scrollTop = el.scrollTop + dy; } catch {}
+		  `, scrollEl, screens);
 		};
-
-		const before = await getScrollInfo();
-		await wheelScroll(900);
-		await this.driver.sleep(200);
-		const after = await getScrollInfo();
-		logger.error({ before, after }, "2gis scroll check");
 
 		const seen = new Set<string>();
 		const reviews: Array<{
@@ -132,11 +98,11 @@ class GisParser extends AbstractParser {
         }> = [];
 
   		let stalled = 0;
-  		let lastUnique = 0;
 
-		while (reviews.length < REVIEW_LIMIT && stalled < 20) {
-			const cards = await this.driver.findElements(By.className("_1k5soqfl"));
+		while (reviews.length < REVIEW_LIMIT && stalled < 8) {
+			const cards = await scrollEl.findElements(By.css("._1k5soqfl"));
 	
+			let added = 0;
 			for (const card of cards) {
 				let reviewerName: string | null = null;
                 let text: string | null = null;
@@ -194,23 +160,25 @@ class GisParser extends AbstractParser {
 				seen.add(key);
 
 				reviews.push({ name: reviewerName, text, raiting, avatar, date });
+				added++;
 			}
 
-			if (reviews.length === lastUnique) stalled++;
-			else {
-			  	stalled = 0;
-			  	lastUnique = reviews.length;
+			const beforeKey = await getLastKeyFast();
+
+			for (let i = 0; i < 6; i++) {
+			  	await wheelStep(3);
+			  	await this.driver.sleep(80);
 			}
 
-			await this.driver.executeScript(`
-			  const el = arguments[0];
-			  const dy = 900;
-			  el.dispatchEvent(new WheelEvent('wheel', { deltaY: dy, bubbles: true, cancelable: true }));
-			  // на всякий случай “подтолкнём” scrollTop, если он поддерживается
-			  try { el.scrollTop = el.scrollTop + dy; } catch {}
-			`, scrollEl);
+			const progressed = await this.driver
+  				.wait(async () => {
+  				  const afterKey = await getLastKeyFast();
+  				  return !!afterKey && afterKey !== beforeKey;
+  				}, 1500)
+  				.catch(() => false);
 
-			await this.driver.sleep(350);
+			if (added > 0 || progressed) stalled = 0;
+			else stalled++;
 		}
 
 		logger.warn(reviews.length, "Найдено отзывов");
