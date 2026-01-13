@@ -1,0 +1,72 @@
+openapi: 3.0.3
+info:
+  title: Parser API
+  version: 3.0.0
+servers:
+  - url: http://localhost:8000
+  # - url: http://155.212.187.80:8000
+paths:
+  /health:
+    get:
+      responses:
+        "200":
+          description: OK
+  /parse/yandex:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ParseRequest" }
+      responses:
+        "200":
+          description: Parse result
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ParseResponse" }
+  /parse/2gis:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ParseRequest" }
+      responses:
+        "200":
+          description: Parse result
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ParseResponse" }
+  /parse/doctors:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ParseRequest" }
+      responses:
+        "200":
+          description: Parse result
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ParseResponse" }
+
+components:
+  schemas:
+    ParseRequest:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+    ParseResponse:
+      type: object
+      required: [success]
+      properties:
+        success: { type: boolean }
+        data:
+          nullable: true
+          type: object
+        error:
+          nullable: true
+          type: string

@@ -1,0 +1,34 @@
+{
+  "version": "2.0.0",
+  "inputs": [
+    {
+      "id": "baseUrl",
+      "type": "promptString",
+      "description": "API base URL",
+      "default": "http://localhost:8000"
+    }
+  ],
+  "tasks": [
+    {
+      "label": "API: Health",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "-e",
+        "fetch('${input:baseUrl}/health').then(r=>r.text()).then(console.log).catch(e=>{console.error(e);process.exit(1);});"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "API: Batch Yandex (parallel)",
+      "type": "process",
+      "command": "node",
+      "args": [
+        "-e",
+        "const base=process.argv[1]; const urls=[\"https://yandex.ru/maps/org/1014186377/reviews\",\"https://yandex.ru/maps/org/1063218042/reviews\",\"https://yandex.ru/maps/org/60623676946/reviews\",\"https://yandex.ru/maps/org/96988795267/reviews\",\"https://yandex.ru/maps/org/1571721771/reviews\",\"https://yandex.ru/maps/org/18963796235/reviews\"]; (async()=>{const res=await Promise.all(urls.map(async url=>{const r=await fetch(base+\"/parse/yandex\",{method:\"POST\",headers:{\"Content-Type\":\"application/json\"},body:JSON.stringify({url})}); let body; try{body=await r.json();}catch{body=await r.text();} return {url,status:r.status,body};})); console.log(JSON.stringify(res,null,2));})().catch(e=>{console.error(e);process.exit(1);});",
+        "${input:baseUrl}"
+      ],
+      "problemMatcher": []
+    }
+  ]
+}

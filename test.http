@@ -1,4 +1,136 @@
-POST http://155.212.187.80:8000/parse/yandex
+@baseUrl = http://localhost:8000
+@contentType = application/json
+
+### Health
+GET {{baseUrl}}/health
+
+
+### Yandex: 1014186377
+POST http://localhost:8000/parse/yandex
 Content-Type: application/json
 
 {"url":"https://yandex.ru/maps/org/1014186377/reviews"}
+
+### Yandex: 1063218042
+POST {{baseUrl}}/parse/yandex
+Content-Type: {{contentType}}
+
+{
+  "url": "https://yandex.ru/maps/org/1063218042/reviews"
+}
+
+### Yandex: 60623676946
+POST {{baseUrl}}/parse/yandex
+Content-Type: {{contentType}}
+
+{
+  "url": "https://yandex.ru/maps/org/60623676946/reviews"
+}
+
+### Yandex: 96988795267
+POST {{baseUrl}}/parse/yandex
+Content-Type: {{contentType}}
+
+{
+  "url": "https://yandex.ru/maps/org/96988795267/reviews"
+}
+
+### Yandex: 1571721771
+POST {{baseUrl}}/parse/yandex
+Content-Type: {{contentType}}
+
+{
+  "url": "https://yandex.ru/maps/org/1571721771/reviews"
+}
+
+### Yandex: 18963796235
+POST {{baseUrl}}/parse/yandex
+Content-Type: {{contentType}}
+
+{
+  "url": "https://yandex.ru/maps/org/18963796235/reviews"
+}
+
+################################## Yandex Query parameters #######################################
+
+### Yandex: 1014186377
+POST http://localhost:8000/parse/yandex?count=100
+Content-Type: application/json
+
+{"url":"https://yandex.ru/maps/org/1014186377/reviews"}
+
+### Yandex: 1014186377
+POST http://localhost:8000/parse/yandex?count=4&maxRating=3&minRating=2
+Content-Type: application/json
+
+{"url":"https://yandex.ru/maps/org/1014186377/reviews"}
+
+### Yandex: 1014186377
+POST http://localhost:8000/parse/yandex?dateStart=2025-12-01&dateEnd=2025-10-31
+Content-Type: application/json
+
+{"url":"https://yandex.ru/maps/org/1014186377/reviews"}
+
+
+
+### 2gis: 5348552839380704
+POST {{baseUrl}}/parse/2gis
+Content-Type: {{contentType}}
+
+{
+  "url": "https://2gis.ru/spb/firm/5348552839380704"
+}
+
+### 2gis: 1267165676897334
+POST {{baseUrl}}/parse/2gis
+Content-Type: {{contentType}}
+
+{
+  "url": "https://2gis.ru/ekaterinburg/firm/1267165676897334"
+}
+
+### 2gis: 1267165676605507
+POST {{baseUrl}}/parse/2gis
+Content-Type: {{contentType}}
+
+{
+  "url": "https://2gis.ru/ekaterinburg/firm/1267165676605507"
+}
+
+################################## 2GIS Query parameters #######################################
+
+### 2gis: 1267165676605507
+POST {{baseUrl}}/parse/2gis?count=5&minRating=2&maxRating=4
+Content-Type: {{contentType}}
+
+{
+  "url": "https://2gis.ru/ekaterinburg/firm/1267165676605507"
+}
+
+### 2gis: 1267165676605507
+POST {{baseUrl}}/parse/2gis?dateStart=2025-01-01&dateEnd=2025-12-31
+Content-Type: {{contentType}}
+
+{
+  "url": "https://2gis.ru/ekaterinburg/firm/1267165676605507"
+}
+
+
+
+
+
+### Doctors: 108066-duet-klinik-na-potaninskoy
+POST {{baseUrl}}/parse/doctors
+Content-Type: {{contentType}}
+
+{
+  "url": "https://prodoctorov.ru/novosibirsk/lpu/108066-duet-klinik-na-potaninskoy/"
+}
+
+### Doctors: 93455-dostupnaya-medicina
+POST {{baseUrl}}/parse/doctors
+Content-Type: {{contentType}}
+
+{
+  "url": "https://prodoctorov.ru/novosibirsk/lpu/93455-dostupnaya-medicina/"
+}

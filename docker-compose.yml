@@ -1,43 +1,58 @@
 services:
   api:
-    build: .
+    build:
+      context: .
+      target: prod
+    restart: unless-stopped
     ports:
       - "8000:8000"
     environment:
-      PARSER_WORKERS: "5"
-      PARSER_QUEUE_MAX: "200"
-      CACHE_TTL_SECONDS: "259200"
-      SELENIUM_REMOTE_URL: http://selenium:4444/wd/hub
-      CHROME_PROFILE_BASE: /home/seluser/chrome-profile
-      REDIS_PASSWORD: ${REDIS_PASSWORD:root}
+      NODE_ENV: production
+      PORT: "8000"
+
+      PARSER_WORKERS: "${PARSER_WORKERS:-5}"
+      PARSER_QUEUE_MAX: "${PARSER_QUEUE_MAX:-200}"
+      CACHE_TTL_SECONDS: "${CACHE_TTL_SECONDS:-259200}"
+
+      SELENIUM_REMOTE_URL: "${SELENIUM_REMOTE_URL:-http://selenium:4444/wd/hub}"
+      CHROME_PROFILE_BASE: "${CHROME_PROFILE_BASE:-/home/seluser/chrome-profile}"
+
+      REDIS_HOST: "${REDIS_HOST:-redis}"
+      REDIS_PORT: "${REDIS_PORT:-6379}"
+      REDIS_PASSWORD: "${REDIS_PASSWORD:-root}"
+
+      LOG_FILE: "${LOG_FILE:-/app/logs/api.log}"
+    volumes:
+      - ./logs:/app/logs
     depends_on:
       - selenium
       - redis
 
   selenium:
     image: selenium/standalone-chromium:latest
-    shm_size: "2gb"
+    restart: unless-stopped
+    shm_size: "${SELENIUM_SHM_SIZE:-2gb}"
     ports:
-      - "4444:4444"   
       - "7900:7900"
     environment:
-      SE_VNC_NO_PASSWORD: "1"
-      SE_NODE_MAX_SESSIONS: "5"
+      SE_VNC_NO_PASSWORD: "${SE_VNC_NO_PASSWORD:-1}"
+      SE_VNC_PASSWORD: "${SE_VNC_PASSWORD}"
+      SE_NODE_MAX_SESSIONS: "${PARSER_WORKERS:-5}"
       SE_NODE_OVERRIDE_MAX_SESSIONS: "true"
     volumes:
       - chrome-profile:/home/seluser/chrome-profile
 
   redis:
     image: redis:7-alpine
+    restart: unless-stopped
     command: >
       redis-server
       --appendonly yes
-      --requirepass ${REDIS_PASSWORD:root}
+      --requirepass ${REDIS_PASSWORD:-root}
     ports:
       - "127.0.0.1:6379:6379"
     volumes:
       - redis-data:/data
-    restart: unless-stopped
 
 volumes:
   redis-data:

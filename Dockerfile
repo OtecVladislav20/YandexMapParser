@@ -1,23 +1,27 @@
-FROM python:3.12-slim
-
-ENV PYTHONUNBUFFERED=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    PIP_NO_CACHE_DIR=1
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-      chromium \
-      chromium-driver \
-      xvfb \
-      xauth \
-    && rm -rf /var/lib/apt/lists/*
-
+FROM node:20-slim AS base
 WORKDIR /app
+COPY package.json package-lock.json ./
 
-COPY requirements.txt ./
-RUN pip install -r requirements.txt
+FROM base AS deps
+RUN npm ci
 
-COPY app ./app
+FROM deps AS dev
+COPY . .
+CMD ["npm", "run", "dev"]
+
+FROM deps AS build
+COPY . .
+RUN npm run build
+
+FROM node:20-slim AS prod
+WORKDIR /app
+ENV NODE_ENV=production
+
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
+COPY --from=build /app/dist ./dist
+COPY openapi.yml ./openapi.yml
 
 EXPOSE 8000
-
-CMD ["sh","-lc","xvfb-run -a -s '-screen 0 1920x1080x24' uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+CMD ["node", "dist/server.js"]
