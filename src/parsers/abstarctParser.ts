@@ -1,11 +1,12 @@
 import { until, type WebDriver, type WebElement, type Locator } from "selenium-webdriver";
+import { TReview } from "../types/type-review.js";
 
 
 export type ParseResult = {
     name: string | null;
     rating: string | null;
     count_reviews: string | null;
-    reviews: unknown[];
+    reviews: TReview[];
 };
 
 export type ParserOpts = {
@@ -66,7 +67,7 @@ export abstract class AbstractParser {
     protected abstract getName(): Promise<string | null>;
     protected abstract getRating(): Promise<string | null>;
     protected abstract getCountReviews(): Promise<string | null>;
-    protected abstract getReviews(): Promise<unknown[]>;
+    protected abstract getReviews(): Promise<TReview[]>;
 
     async parse(url: string): Promise<ParseResult> {
         await this.driver.get(url);

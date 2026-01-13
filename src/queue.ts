@@ -5,15 +5,16 @@ import { cacheKey } from "./cache.js";
 import { ProfilePool } from "./profilePool.js";
 import { parseYandex } from "./parsers/yandex.js";
 import { parse2gis } from "./parsers/gis.js";
-import { ParserKind } from "./types/parser-kind.js";
+import { ParserKind } from "./types/type-parser-kind.js";
 import { parseAboutDoctors } from "./parsers/about-doctors.js";
+import { TReview } from "./types/type-review.js";
 
 
 type ParseResult = {
     name: string | null;
     rating: string | null;
     count_reviews: string | null;
-    reviews: unknown[];
+    reviews: TReview[];
 };
 
 type QueueDeps = {

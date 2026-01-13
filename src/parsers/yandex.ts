@@ -2,6 +2,7 @@ import { By, WebElement } from "selenium-webdriver";
 import { withDriver } from "../selenium.js";
 import { AbstractParser } from "./abstarctParser.js";
 import { logger } from "../logger.js";
+import { TReview } from "../types/type-review.js";
 
 
 const CAPTCHA_RE = /not a robot|не робот|подтверд/i;
@@ -69,13 +70,7 @@ class YandexParser extends AbstractParser {
         };
       
         const seen = new Set<string>();
-        const reviews: Array<{
-            name: string | null;
-            text: string | null;
-            raiting: number | null;
-            avatar: string | null;
-            date: string | null;
-        }> = [];
+        const reviews: TReview[] = [];
       
         let stalled = 0;
         let lastMax = await getMaxPosSafe();
@@ -89,7 +84,7 @@ class YandexParser extends AbstractParser {
                 
                 let reviewerName: string | null = null;
                 let text: string | null = null;
-                let raiting: number | null = null;
+                let rating: number | null = null;
                 let avatar: string | null = null;
                 let date: string | null = null;
                 
@@ -120,7 +115,7 @@ class YandexParser extends AbstractParser {
                 }
           
                 try {
-                    raiting = (await block.findElements(By.css(".business-rating-badge-view__star._full"))).length;
+                    rating = (await block.findElements(By.css(".business-rating-badge-view__star._full"))).length;
                 } catch {
                     logger.warn("Не удалось получить рейтинг отзыва");
                 }
@@ -141,7 +136,7 @@ class YandexParser extends AbstractParser {
                     logger.warn("Не удалось получить дату отзыва");
                 }
           
-                reviews.push({ name: reviewerName, raiting, text, avatar, date });
+                reviews.push({ name: reviewerName, rating, text, avatar, date });
                 added++;
             }
 

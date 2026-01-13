@@ -2,6 +2,7 @@ import { By, until, WebElement } from "selenium-webdriver";
 import { withDriver } from "../selenium.js";
 import { AbstractParser } from "./abstarctParser.js";
 import { logger } from "../logger.js";
+import { TReview } from "../types/type-review.js";
 
 
 const CAPTCHA_RE = /not a robot|не робот|подтверд/i;
@@ -58,7 +59,7 @@ class GisParser extends AbstractParser {
 		}
 	}
 
-	async getReviews(): Promise<unknown[]> {
+	async getReviews() {
 		const ok = await this.openReviewsPage();
 		if (!ok) return [];
 
@@ -97,13 +98,7 @@ class GisParser extends AbstractParser {
 		};
 
 		const seen = new Set<string>();
-		const reviews: Array<{
-          	name: string | null;
-          	text: string | null;
-          	raiting: number | null;
-          	avatar: string | null;
-          	date: string | null;
-        }> = [];
+		const reviews: TReview[] = [];
 
   		let stalled = 0;
 
@@ -114,7 +109,7 @@ class GisParser extends AbstractParser {
 			for (const card of cards) {
 				let reviewerName: string | null = null;
                 let text: string | null = null;
-                let raiting: number | null = null;
+                let rating: number | null = null;
                 let avatar: string | null = null;
                 let date: string | null = null;
 
@@ -148,7 +143,7 @@ class GisParser extends AbstractParser {
 
 				try {
       			  	const stars = await card.findElements(By.css("._1fkin5c > span"));
-      			  	raiting = stars.length || null;
+      			  	rating = stars.length || null;
       			} catch {
 					logger.warn("Не удалось получить рейтинг отзыва");
 				}
@@ -167,7 +162,7 @@ class GisParser extends AbstractParser {
 				if (seen.has(key)) continue;
 				seen.add(key);
 
-				reviews.push({ name: reviewerName, text, raiting, avatar, date });
+				reviews.push({ name: reviewerName, text, rating, avatar, date });
 				added++;
 			}
 

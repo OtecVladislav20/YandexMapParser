@@ -6,15 +6,13 @@ import { parse as parseYaml } from "yaml";
 import { readFileSync } from "node:fs";
 import swaggerUi from "swagger-ui-express";
 
-
 import { ProfilePool } from "./profilePool.js";
 import { createRedis } from "./redis.js";
 import { createQueue } from "./queue.js";
 import { logger } from "./logger.js";
-import { ParserKind } from "./types/parser-kind.js";
-import { ParsedQs } from "qs";
-import { getQueryParameters, ResponseQueryParameters } from "./http/parseQuery.js";
-import { applyResponseOptions } from "./http/applyResponseOptions.js";
+import { ParserKind } from "./types/type-parser-kind.js";
+import { getQueryParameters, ResponseQueryParameters } from "./http/get-query-parameters.js";
+import { applyResponseOptions } from "./http/apply-query-parameters.js";
 
 
 type ParseRequestBody = { url?: string };
@@ -76,8 +74,8 @@ async function handleParse(
 
     try {
         const data = await enqueue(pqueue, kind, url);
-        req.log.info({ kind, ms: Date.now() - started }, "Запрос обработан");
         const out = applyResponseOptions(data, opts);
+        req.log.info({ kind, ms: Date.now() - started }, "Запрос обработан");
         return res.json({ success: true, data: out, error: null });
     } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : String(e);

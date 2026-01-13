@@ -2,6 +2,7 @@ import { By, until } from "selenium-webdriver";
 import { withDriver } from "../selenium.js";
 import { AbstractParser } from "./abstarctParser.js";
 import { logger } from "../logger.js";
+import { TReview } from "../types/type-review.js";
 
 
 const CAPTCHA_RE = /not a robot|не робот|подтверд/i;
@@ -74,29 +75,22 @@ class AboutDoctors extends AbstractParser {
 
         const blocks = await this.driver.findElements(By.css(".b-review-card.year2025.b-review-card_positive"));
 
-        const reviews: Array<
-		{ 
-			name: string | null; 
-			text: string | null; 
-			raiting: string | null; 
-			avatar: string | null; 
-			date: string | null;
-		}> = [];
+        const reviews: TReview[] = [];
 
         for (const block of blocks.slice(0, 20)) { 
             let reviewerName = null;
             let text = null;
             let avatar = null;
-            let raiting = null;
+            let rating = null;
             let date = null;
 
             reviewerName = await this.tryChildTextContent(block,By.css(".b-review-card__author-link"))
             text = await this.tryChildTextContent(block,By.css(".b-review-card__comment.text-body-1.text--text.mt-2"));
             avatar = 'Аватара нет на сайте';
-            raiting = await this.tryChildTextContent(block,By.css(".text-subtitle-2.text--text.ml-1"));
+            rating = Number(await this.tryChildTextContent(block,By.css(".text-subtitle-2.text--text.ml-1")));
             date = await this.tryChildTextContent(block,By.css(".text-body-2.text-secondary--text.mb-5"));
 
-            reviews.push({ name: reviewerName, raiting, text, avatar, date });
+            reviews.push({ name: reviewerName, rating, text, avatar, date });
         }
 
         return reviews;
