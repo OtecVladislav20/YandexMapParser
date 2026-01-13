@@ -3,6 +3,7 @@ import { withDriver } from "../selenium.js";
 import { AbstractParser } from "./abstarctParser.js";
 import { logger } from "../logger.js";
 import { TReview } from "../types/type-review.js";
+import { normalizeDoctorsDate } from "../utils/normalize-date-review.js";
 
 
 const CAPTCHA_RE = /not a robot|не робот|подтверд/i;
@@ -89,6 +90,7 @@ class AboutDoctors extends AbstractParser {
             avatar = 'Аватара нет на сайте';
             rating = Number(await this.tryChildTextContent(block,By.css(".text-subtitle-2.text--text.ml-1")));
             date = await this.tryChildTextContent(block,By.css(".text-body-2.text-secondary--text.mb-5"));
+            date = normalizeDoctorsDate(date);
 
             reviews.push({ name: reviewerName, rating, text, avatar, date });
         }

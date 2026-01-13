@@ -3,6 +3,7 @@ import { withDriver } from "../selenium.js";
 import { AbstractParser } from "./abstarctParser.js";
 import { logger } from "../logger.js";
 import { TReview } from "../types/type-review.js";
+import { normalize2gisDate } from "../utils/normalize-date-review.js";
 
 
 const CAPTCHA_RE = /not a robot|не робот|подтверд/i;
@@ -137,7 +138,8 @@ class GisParser extends AbstractParser {
 				try {
       			  	const dateEl = await card.findElement(By.css("._a5f6uz"));
       			  	date = this.normalizeText(await dateEl.getAttribute("textContent"))?.split(",")[0].trim() ?? null;
-      			} catch {
+					date = normalize2gisDate(date);
+				} catch {
 					logger.warn("Не удалось получить дату отзыва");
 				}
 

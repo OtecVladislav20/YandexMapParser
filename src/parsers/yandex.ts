@@ -3,6 +3,7 @@ import { withDriver } from "../selenium.js";
 import { AbstractParser } from "./abstarctParser.js";
 import { logger } from "../logger.js";
 import { TReview } from "../types/type-review.js";
+import { normalizeYandexDate } from "../utils/normalize-date-review.js";
 
 
 const CAPTCHA_RE = /not a robot|не робот|подтверд/i;
@@ -50,7 +51,8 @@ class YandexParser extends AbstractParser {
     async getCountReviews() {
         try {
             const root = await this.waitLocated(By.css(".business-rating-amount-view._summary"), 8000);
-            return this.normalizeText(await root.getText());
+            let countReviews = this.normalizeText(await root.getAttribute("textContent"));
+            return countReviews;
         } catch (e: unknown) {
             const msg = e instanceof Error ? e.message : String(e);
             logger.warn({ msg }, "Ошибка получения кол-ва отзывов");
@@ -132,6 +134,7 @@ class YandexParser extends AbstractParser {
 
                 try {
                     date = await this.tryChildText(block, By.css(".business-review-view__date span"));
+                    date = normalizeYandexDate(date);
                 } catch {
                     logger.warn("Не удалось получить дату отзыва");
                 }

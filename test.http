@@ -54,7 +54,7 @@ Content-Type: {{contentType}}
 ################################## Yandex Query parameters #######################################
 
 ### Yandex: 1014186377
-POST http://localhost:8000/parse/yandex?count=4
+POST http://localhost:8000/parse/yandex?count=100
 Content-Type: application/json
 
 {"url":"https://yandex.ru/maps/org/1014186377/reviews"}
@@ -94,7 +94,7 @@ Content-Type: {{contentType}}
 ################################## 2GIS Query parameters #######################################
 
 ### 2gis: 1267165676605507
-POST {{baseUrl}}/parse/2gis?count=2
+POST {{baseUrl}}/parse/2gis?count=5&minRating=2&maxRating=4
 Content-Type: {{contentType}}
 
 {

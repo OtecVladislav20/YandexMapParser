@@ -9,16 +9,25 @@ type TData = {
 export function applyResponseOptions(data: TData, opts: ResponseQueryParameters): TData {
     let reviews = data.reviews;
 
-    if (opts.minRating !== undefined || opts.maxRating !== undefined) {
-        const min = opts.minRating ?? 1;
-        const max = opts.maxRating ?? 5;
-        
-        reviews = reviews.filter((r) => r.rating !== null && r.rating >= min && r.rating <= max);
-    }
-
-    if (opts.count !== undefined) {
-        reviews = reviews.slice(0, opts.count);
-    }
+    reviews = filterByRating(reviews, opts.minRating, opts.maxRating);
+    reviews = limitCount(reviews, opts.count);
 
     return { ...data, reviews };
+}
+
+function filterByRating(reviews: TReview[], minRating?: number, maxRating?: number) {
+    if (minRating !== undefined || maxRating !== undefined) {
+        const min = minRating ?? 1;
+        const max = maxRating ?? 5;
+        return reviews.filter((r) => r.rating !== null && r.rating >= min && r.rating <= max);
+    }
+    
+    return reviews;
+}
+
+function limitCount(reviews: TReview[], count?: number) {
+    if (count === undefined) {
+        return reviews;
+    }
+    return reviews.slice(0, count);
 }
