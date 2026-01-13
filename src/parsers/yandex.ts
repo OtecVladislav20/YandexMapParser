@@ -30,10 +30,6 @@ class YandexParser extends AbstractParser {
         }
     }
 
-    async getName() {
-        return await this.tryText(By.css("h1"));
-    }
-
     async getRating() {
         try {
             const root = await this.waitLocated(By.css(".business-summary-rating-badge-view__rating"), 8000);

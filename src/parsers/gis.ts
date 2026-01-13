@@ -35,10 +35,6 @@ class GisParser extends AbstractParser {
 		}
     }
 
-	async getName() {
-		return await this.tryText(By.css("h1"));
-	}
-
 	async getRating() {
 		try {
 			let rating = await this.tryText(By.className("_y10azs"));

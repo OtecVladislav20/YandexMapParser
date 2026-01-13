@@ -65,6 +65,12 @@ Content-Type: application/json
 
 {"url":"https://yandex.ru/maps/org/1014186377/reviews"}
 
+### Yandex: 1014186377
+POST http://localhost:8000/parse/yandex?dateStart=2025-12-01&dateEnd=2025-10-31
+Content-Type: application/json
+
+{"url":"https://yandex.ru/maps/org/1014186377/reviews"}
+
 
 
 ### 2gis: 5348552839380704
@@ -100,6 +106,15 @@ Content-Type: {{contentType}}
 {
   "url": "https://2gis.ru/ekaterinburg/firm/1267165676605507"
 }
+
+### 2gis: 1267165676605507
+POST {{baseUrl}}/parse/2gis?dateStart=2025-01-01&dateEnd=2025-12-31
+Content-Type: {{contentType}}
+
+{
+  "url": "https://2gis.ru/ekaterinburg/firm/1267165676605507"
+}
+
 
 
 

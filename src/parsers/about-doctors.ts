@@ -54,10 +54,6 @@ class AboutDoctors extends AbstractParser {
         }
     }
 
-    async getName() {
-        return await this.tryText(By.css("h1"));
-    }
-
     async getRating() {
         const root = await this.waitLocated(By.css(".text-h5.text--text.font-weight-medium.mr-2"), 5000);
         return this.normalizeText(await root.getText());
