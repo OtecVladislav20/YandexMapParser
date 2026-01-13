@@ -134,3 +134,11 @@ Content-Type: {{contentType}}
 {
   "url": "https://prodoctorov.ru/novosibirsk/lpu/93455-dostupnaya-medicina/"
 }
+
+### Doctors: 54669-duet-klinik
+POST {{baseUrl}}/parse/doctors
+Content-Type: {{contentType}}
+
+{
+  "url": "https://prodoctorov.ru/novosibirsk/lpu/54669-duet-klinik/"
+}

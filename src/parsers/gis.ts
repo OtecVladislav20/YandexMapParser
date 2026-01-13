@@ -10,7 +10,7 @@ const CAPTCHA_RE = /not a robot|не робот|подтверд/i;
 const REVIEW_LIMIT = 150;
 
 class GisParser extends AbstractParser {
-	async openReviewsPage() {
+	private async openReviewsPage() {
     	try {
     	    const tab = await this.driver.wait(until.elementLocated(By.xpath("//a[contains(@href,'tab/reviews')]")), 10000);
     	    await this.driver.executeScript("arguments[0].scrollIntoView(true);", tab);

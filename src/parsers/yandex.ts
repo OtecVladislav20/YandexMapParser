@@ -11,7 +11,7 @@ const REVIEW_LIMIT = 150;
 
 
 class YandexParser extends AbstractParser {
-    async maybeExpandReview(block: WebElement) {
+    private async maybeExpandReview(block: WebElement) {
         try {
             const moreButton = await block.findElement( By.css(".spoiler-view__button .business-review-view__expand"));
             await this.driver.executeScript("arguments[0].click();", moreButton);
