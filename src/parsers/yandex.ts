@@ -13,8 +13,8 @@ const REVIEW_LIMIT = 150;
 class YandexParser extends AbstractParser {
     private async maybeExpandReview(block: WebElement) {
         try {
-            const moreButton = await block.findElement( By.css(".spoiler-view__button .business-review-view__expand"));
-            await this.driver.executeScript("arguments[0].click();", moreButton);
+            const moreBtns = await block.findElements(By.css(".spoiler-view__button .business-review-view__expand"));
+            if (moreBtns[0]) await this.driver.executeScript("arguments[0].click();", moreBtns[0]);
         } catch {}
     }
 
@@ -63,6 +63,7 @@ class YandexParser extends AbstractParser {
         const seen = new Set<string>();
         const reviews: TReview[] = [];
 
+        // Получает макисмальную позицию элемента среди загруженных отзывов
         const getMaxPosSafe = async () =>
             (await this.driver.executeScript(
               `
@@ -77,8 +78,6 @@ class YandexParser extends AbstractParser {
               `,
               reviewsContainer
             )) as number;
-
-        let lastMax = await getMaxPosSafe();
       
         while (reviews.length < REVIEW_LIMIT) {
             const cards = await reviewsContainer.findElements(By.css('.business-reviews-card-view__review'));
@@ -146,7 +145,7 @@ class YandexParser extends AbstractParser {
 
             if (cards.length < 50) break;
 
-            const before = lastMax;
+            const before = await getMaxPosSafe();
             let progressed = false;
 
             for (let i = 0; i < 5; i++) {
@@ -158,7 +157,6 @@ class YandexParser extends AbstractParser {
           
                 const after = await getMaxPosSafe();
                 if (after > before) {
-                    lastMax = after;
                     progressed = true;
                     break;
                 }
