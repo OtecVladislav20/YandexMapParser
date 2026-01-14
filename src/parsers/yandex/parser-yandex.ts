@@ -7,24 +7,15 @@ import { normalizeYandexDate } from "../../utils/normalize-date-review.js";
 import { Yandex } from "./const-yandex.js";
 
 
-const REVIEW_LIMIT = 150;
-
 class YandexParser extends AbstractParser {
-    private async maybeExpandReview(block: WebElement) {
-        try {
-            const moreBtns = await block.findElements(By.css(Yandex.moreButton));
-            if (moreBtns[0]) await this.driver.executeScript("arguments[0].click();", moreBtns[0]);
-        } catch {}
-    }
-
     async getName() {
         return await this.getNameText(By.css(Yandex.name));
     }
 
     async getRating() {
         try {
-            const root = await this.waitLocated(By.css(".business-summary-rating-badge-view__rating"), 8000);
-            const spans = await root.findElements(By.css(".business-summary-rating-badge-view__rating-text"));
+            const root = await this.waitLocated(By.css(Yandex.ratingContainer), 8000);
+            const spans = await root.findElements(By.css(Yandex.ratingText));
             const parts = await Promise.all(spans.map(s => s.getAttribute("textContent")));
             const merged = parts.map(p => (p ?? "").trim()).join("");
             return merged.length ? merged : null;
@@ -35,120 +26,133 @@ class YandexParser extends AbstractParser {
         }
     }
 
-    protected async getCountReviews() {
-	  	return await this.getCountReviewsText(By.css(".business-rating-amount-view._summary"));
+    async getCountReviews() {
+	  	return await this.getCountReviewsText(By.css(Yandex.countReviews));
 	}
 
     async getReviews() {
-        let reviewsContainer = await this.waitLocated(By.css('.business-reviews-card-view__reviews-container'), 10000);
+        let reviewsContainer = await this.waitLocated(By.css(Yandex.reviewsContainer), 10000);
       
         const seen = new Set<string>();
         const reviews: TReview[] = [];
-
-        // Получает макисмальную позицию элемента среди загруженных отзывов
-        const getMaxPosSafe = async () =>
-            (await this.driver.executeScript(
-              `
-              const root = arguments[0];
-              const cards = root.querySelectorAll('.business-reviews-card-view__review');
-              let max = 0;
-              for (const c of cards) {
-                const v = Number(c.getAttribute('aria-posinset') || 0);
-                if (Number.isFinite(v) && v > max) max = v;
-              }
-              return max;
-              `,
-              reviewsContainer
-            )) as number;
       
-        while (reviews.length < REVIEW_LIMIT) {
-            const cards = await reviewsContainer.findElements(By.css('.business-reviews-card-view__review'));
+        while (reviews.length < AbstractParser.REVIEW_LIMIT) {
+            const cards = await reviewsContainer.findElements(By.css(Yandex.reviewCard));
 
             for (const card of cards) {
-                let block: WebElement | null = null;
-                
-                let reviewerName: string | null = null;
-                let text: string | null = null;
-                let rating: number | null = null;
-                let avatar: string | null = null;
-                let date: string | null = null;
-                
-                if (reviews.length >= REVIEW_LIMIT) break;
-
-                const pos = await card.getAttribute("aria-posinset");
-                if (!pos || seen.has(pos)) continue;
-                seen.add(pos);
-            
-                try {
-                    block = await card.findElement(By.css(".business-review-view"));
-                } catch {
-                    continue;
-                }
-          
-                try {
-                    reviewerName = await this.tryChildText(block, By.css("[itemprop='name']"));
-                } catch {
-                    logger.warn("Не удалось получить имя ревьювера");
-                }
-          
-                await this.maybeExpandReview(block);
-
-                try {
-                    text = await this.tryChildTextContent(block, By.css(".spoiler-view__text-container"));
-                } catch {
-                    logger.warn("Не удалось получить текст отзыва");
-                }
-          
-                try {
-                    rating = (await block.findElements(By.css(".business-rating-badge-view__star._full"))).length;
-                } catch {
-                    logger.warn("Не удалось получить рейтинг отзыва");
-                }
-          
-                try {
-                    const avatarEl = await block.findElement(By.css(".user-icon-view__icon"));
-                    const style = await avatarEl.getAttribute("style");
-                    if (style?.includes("url(")) {
-                        avatar = style.split("url(")[1].split(")")[0].replace(/['"]/g, "");
-                    }
-                } catch {
-                    logger.warn("Не удалось получить аватар ревьювера");
-                }
-
-                try {
-                    date = await this.tryChildText(block, By.css(".business-review-view__date span"));
-                    date = normalizeYandexDate(date);
-                } catch {
-                    logger.warn("Не удалось получить дату отзыва");
-                }
-          
-                reviews.push({ name: reviewerName, rating, text, avatar, date });
+                if (reviews.length >= AbstractParser.REVIEW_LIMIT) break;
+                await this.parseReviewCard(card, seen, reviews);
             }
 
             if (cards.length < 50) break;
 
-            const before = await getMaxPosSafe();
-            let progressed = false;
-
-            for (let i = 0; i < 5; i++) {
-                await this.driver.executeScript(
-                    "arguments[0].scrollIntoView({block:'end'});",
-                    cards[cards.length - 1]
-                );
-                await this.driver.sleep(120);
-          
-                const after = await getMaxPosSafe();
-                if (after > before) {
-                    progressed = true;
-                    break;
-                }
-            }
-
+            const progressed = await this.scrollToNextBatch(reviewsContainer, cards[cards.length - 1]);
             if (!progressed) break;
         }
-      
-        logger.warn(reviews.length, "Найдено отзывов");
+
+        logger.info({ kind: "yandex", reviewsCount: reviews.length }, "Собрано отзывов с Яндекса");
         return reviews;
+    }
+
+    private async parseReviewCard(card: WebElement, seen: Set<string>, reviews: TReview[]) {
+        let block: WebElement | null = null;
+        let reviewerName: string | null = null;
+        let text: string | null = null;
+        let rating: number | null = null;
+        let avatar: string | null = null;
+        let date: string | null = null;
+        
+        const pos = await card.getAttribute("aria-posinset");
+        if (!pos || seen.has(pos)) return false;
+        seen.add(pos);
+
+        try {
+            block = await card.findElement(By.css(Yandex.review));
+        } catch {
+            return false;
+        }
+          
+        try {
+            reviewerName = await this.tryChildText(block, By.css(Yandex.author));
+        } catch {
+            logger.warn("Не удалось получить имя ревьювера");
+        }
+          
+        await this.maybeExpandReview(block);
+
+        try {
+            text = await this.tryChildTextContent(block, By.css(Yandex.text));
+        } catch {
+            logger.warn("Не удалось получить текст отзыва");
+        }
+          
+        try {
+            rating = (await block.findElements(By.css(Yandex.reviewRating))).length;
+        } catch {
+            logger.warn("Не удалось получить рейтинг отзыва");
+        }
+          
+        try {
+            const avatarEl = await block.findElement(By.css(Yandex.avatarIcon));
+            const style = await avatarEl.getAttribute("style");
+            if (style?.includes("url(")) {
+                avatar = style.split("url(")[1].split(")")[0].replace(/['"]/g, "");
+            }
+        } catch {
+            logger.warn("Не удалось получить аватар ревьювера");
+        }
+
+        try {
+            date = await this.tryChildText(block, By.css(Yandex.date));
+            date = normalizeYandexDate(date);
+        } catch {
+            logger.warn("Не удалось получить дату отзыва");
+        }
+          
+        reviews.push({ name: reviewerName, rating, text, avatar, date });
+        return true;
+    }
+
+    private async maybeExpandReview(block: WebElement) {
+        try {
+            const moreBtns = await block.findElements(By.css(Yandex.moreButton));
+            if (moreBtns[0]) await this.driver.executeScript("arguments[0].click();", moreBtns[0]);
+        } catch {}
+    }
+
+    // Получает макисмальную позицию элемента среди загруженных отзывов
+    private async getMaxPosSafe(reviewsContainer: WebElement): Promise<number> {
+        return (await this.driver.executeScript(
+            `
+            const root = arguments[0];
+            const sel = arguments[1];
+            const cards = root.querySelectorAll(sel);
+            let max = 0;
+            for (const c of cards) {
+              const v = Number(c.getAttribute('aria-posinset') || 0);
+              if (Number.isFinite(v) && v > max) max = v;
+            }
+            return max;
+            `,
+            reviewsContainer,
+            Yandex.reviewCard
+        )) as number;
+    }
+
+    private async scrollToNextBatch(reviewsContainer: WebElement, lastCard: WebElement): Promise<boolean> {
+        const before = await this.getMaxPosSafe(reviewsContainer);
+
+        for (let i = 0; i < 5; i++) {
+            await this.driver.executeScript(
+                "arguments[0].scrollIntoView({block:'end'});",
+                lastCard
+            );
+            await this.driver.sleep(120);
+          
+            const after = await this.getMaxPosSafe(reviewsContainer);
+            if (after > before) return true;
+        }
+        return false;
     }
 }
 

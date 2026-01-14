@@ -17,51 +17,13 @@ export type ParserOpts = {
 export abstract class AbstractParser {
     protected driver: WebDriver;
     protected opts: Required<ParserOpts>;
+
     protected static CAPTCHA_RE = /not a robot|не робот|подтверд/i;
+    protected static REVIEW_LIMIT = 150;
 
     constructor(driver: WebDriver,  opts: ParserOpts = {}) {
         this.driver = driver;
         this.opts = { timeoutMs: 5000, ...opts };
-    }
-
-    normalizeText(value: string | number): string | null {
-        if (value == null) return null;
-        const t = String(value)
-            .replace(/\\r\\n|\\n|\\r/g, " ")
-            .replace(/\s+/g, " ")
-            .trim();
-        return t.length ? t : null;
-    }
-
-    async waitLocated(locator: Locator, timeoutMs = this.opts.timeoutMs) {
-        return await this.driver.wait(until.elementLocated(locator), timeoutMs);
-    }
-
-    async tryText(locator: Locator, timeoutMs = this.opts.timeoutMs) {
-        try {
-            const el = await this.waitLocated(locator, timeoutMs);
-            return this.normalizeText(await el.getText());
-        } catch {
-            return null;
-        }
-    }
-
-    async tryChildText(parent: WebElement, locator: Locator) {
-        try {
-            const el = await parent.findElement(locator);
-            return this.normalizeText(await el.getText());
-        } catch {
-            return null;
-        }
-    }
-
-    async tryChildTextContent(parent: WebElement, locator: Locator) {
-        try {
-            const el = await parent.findElement(locator);
-            return this.normalizeText(await el.getAttribute("textContent"));
-        } catch {
-            return null;
-        }
     }
 
     protected async getNameText(locator: Locator): Promise<string | null> {
@@ -105,7 +67,6 @@ export abstract class AbstractParser {
         }
     }
 
-
     protected abstract getName(): Promise<string | null>;
     protected abstract getRating(): Promise<string | null>;
     protected abstract getCountReviews(): Promise<string | null>;
@@ -121,5 +82,46 @@ export abstract class AbstractParser {
             count_reviews: await this.getCountReviews(),
             reviews: await this.getReviews(),
         };
+    }
+
+
+    normalizeText(value: string | number): string | null {
+        if (value == null) return null;
+        const t = String(value)
+            .replace(/\\r\\n|\\n|\\r/g, " ")
+            .replace(/\s+/g, " ")
+            .trim();
+        return t.length ? t : null;
+    }
+
+    async waitLocated(locator: Locator, timeoutMs = this.opts.timeoutMs) {
+        return await this.driver.wait(until.elementLocated(locator), timeoutMs);
+    }
+
+    async tryText(locator: Locator, timeoutMs = this.opts.timeoutMs) {
+        try {
+            const el = await this.waitLocated(locator, timeoutMs);
+            return this.normalizeText(await el.getText());
+        } catch {
+            return null;
+        }
+    }
+
+    async tryChildText(parent: WebElement, locator: Locator) {
+        try {
+            const el = await parent.findElement(locator);
+            return this.normalizeText(await el.getText());
+        } catch {
+            return null;
+        }
+    }
+
+    async tryChildTextContent(parent: WebElement, locator: Locator) {
+        try {
+            const el = await parent.findElement(locator);
+            return this.normalizeText(await el.getAttribute("textContent"));
+        } catch {
+            return null;
+        }
     }
 }
