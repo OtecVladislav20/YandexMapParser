@@ -1,33 +1,24 @@
 import { By, WebElement } from "selenium-webdriver";
-import { withDriver } from "../selenium.js";
-import { AbstractParser } from "./abstarctParser.js";
-import { logger } from "../logger.js";
-import { TReview } from "../types/type-review.js";
-import { normalizeYandexDate } from "../utils/normalize-date-review.js";
+import { withDriver } from "../../selenium.js";
+import { AbstractParser } from "../parser-abstarct.js";
+import { logger } from "../../logger.js";
+import { TReview } from "../../types/type-review.js";
+import { normalizeYandexDate } from "../../utils/normalize-date-review.js";
+import { Yandex } from "./const-yandex.js";
 
-
-const CAPTCHA_RE = /not a robot|не робот|подтверд/i;
 
 const REVIEW_LIMIT = 150;
 
 class YandexParser extends AbstractParser {
     private async maybeExpandReview(block: WebElement) {
         try {
-            const moreBtns = await block.findElements(By.css(".spoiler-view__button .business-review-view__expand"));
+            const moreBtns = await block.findElements(By.css(Yandex.moreButton));
             if (moreBtns[0]) await this.driver.executeScript("arguments[0].click();", moreBtns[0]);
         } catch {}
     }
 
-    async assertNotCaptcha() {
-        let name = await this.tryText(By.css("h1"));
-        if (name && CAPTCHA_RE.test(name)) {
-            await this.driver.sleep(20000);
-            name = await this.tryText(By.css("h1"));
-            if (name && CAPTCHA_RE.test(name)) {
-                logger.warn('Вышла капча');
-                throw new Error("captcha_required");
-            }
-        }
+    async getName() {
+        return await this.getNameText(By.css(Yandex.name));
     }
 
     async getRating() {
@@ -44,18 +35,9 @@ class YandexParser extends AbstractParser {
         }
     }
 
-    async getCountReviews() {
-        try {
-            const root = await this.waitLocated(By.css(".business-rating-amount-view._summary"), 8000);
-            let countReviews = this.normalizeText(await root.getAttribute("textContent"));
-            if (!countReviews) return null;
-            return countReviews?.split(" ")[0];
-        } catch (e: unknown) {
-            const msg = e instanceof Error ? e.message : String(e);
-            logger.warn({ msg }, "Ошибка получения кол-ва отзывов");
-            return null
-        }
-    }
+    protected async getCountReviews() {
+	  	return await this.getCountReviewsText(By.css(".business-rating-amount-view._summary"));
+	}
 
     async getReviews() {
         let reviewsContainer = await this.waitLocated(By.css('.business-reviews-card-view__reviews-container'), 10000);

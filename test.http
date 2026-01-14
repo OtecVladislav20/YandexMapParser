@@ -108,7 +108,7 @@ Content-Type: {{contentType}}
 }
 
 ### 2gis: 1267165676605507
-POST {{baseUrl}}/parse/2gis?dateStart=2025-01-01&dateEnd=2025-12-31
+POST {{baseUrl}}/parse/2gis?dateStart=2025-01-01&dateEnd=2025-12-31&count=10&minRating=3&maxRating=5
 Content-Type: {{contentType}}
 
 {
@@ -136,7 +136,7 @@ Content-Type: {{contentType}}
 }
 
 ### Doctors: 54669-duet-klinik
-POST {{baseUrl}}/parse/doctors
+POST {{baseUrl}}/parse/doctors?dateStart=2024-01-01&dateEnd=2024-12-31
 Content-Type: {{contentType}}
 
 {

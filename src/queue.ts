@@ -3,7 +3,7 @@ import type { Logger } from "pino";
 import type { RedisClientType, RedisModules, RedisFunctions, RedisScripts } from "redis";
 import { cacheKey } from "./cache.js";
 import { ProfilePool } from "./profilePool.js";
-import { parseYandex } from "./parsers/yandex.js";
+import { parseYandex } from "./parsers/yandex/parser-yandex.js";
 import { parse2gis } from "./parsers/gis.js";
 import { ParserKind } from "./types/type-parser-kind.js";
 import { parseAboutDoctors } from "./parsers/about-doctors.js";

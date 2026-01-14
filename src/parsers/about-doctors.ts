@@ -1,12 +1,11 @@
 import { By, until } from "selenium-webdriver";
 import { withDriver } from "../selenium.js";
-import { AbstractParser } from "./abstarctParser.js";
+import { AbstractParser } from "./parser-abstarct.js";
 import { logger } from "../logger.js";
 import { TReview } from "../types/type-review.js";
 import { normalizeDoctorsDate } from "../utils/normalize-date-review.js";
 
 
-const CAPTCHA_RE = /not a robot|не робот|подтверд/i;
 const REVIEW_LIMIT = 150;
 
 class AboutDoctors extends AbstractParser {
@@ -38,41 +37,17 @@ class AboutDoctors extends AbstractParser {
         return true;
     }
 
-    async assertNotCaptcha() {
-        let name = await this.tryText(By.css("h1"));
-        if (name && CAPTCHA_RE.test(name)) {
-            await this.driver.sleep(20000);
-            name = await this.tryText(By.css("h1"));
-            if (name && CAPTCHA_RE.test(name)) {
-                logger.warn('Вышла капча');
-                throw new Error("captcha_required");
-            }
-        }
+    async getName() {
+        return await this.getNameText(By.css("h1"));
     }
 
     async getRating() {
-        try {
-            const root = await this.waitLocated(By.css(".text-h5.text--text.font-weight-medium.mr-2"), 5000);
-            return this.normalizeText(await root.getText());
-        } catch (e: unknown) {
-            const msg = e instanceof Error ? e.message : String(e);
-            logger.warn({ msg }, "Ошибка получения рейтинга");
-            return null;
-        }
+        return this.getRatingText(By.css(".text-h5.text--text.font-weight-medium.mr-2"));
     }
 
-    async getCountReviews() {
-        try {
-            const root = await this.waitLocated(By.css(".b-box-rating__text"), 5000);
-            let text = this.normalizeText(await root.getText());
-            if (!text) return null;
-            return text.split(" ")[0];
-        } catch (e: unknown) {
-            const msg = e instanceof Error ? e.message : String(e);
-            logger.warn({ msg }, "Ошибка получения кол-ва отзывов");
-            return null;
-        }
-    }
+    protected async getCountReviews() {
+	  	return await this.getCountReviewsText(By.css(".b-box-rating__text"));
+	}
 
     async getReviews() {
         const ok = await this.openReviewsPage();
