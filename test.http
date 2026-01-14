@@ -11,7 +11,7 @@ Content-Type: application/json
 
 {"url":"https://yandex.ru/maps/org/1014186377/reviews"}
 
-### Yandex: 1063218042
+### Yandex: 1063218042 - Главный тест с большим кол-вом отзывов
 POST {{baseUrl}}/parse/yandex
 Content-Type: {{contentType}}
 
@@ -19,7 +19,7 @@ Content-Type: {{contentType}}
   "url": "https://yandex.ru/maps/org/1063218042/reviews"
 }
 
-### Yandex: 60623676946
+### Yandex: 60623676946 - Малое кол-во отзывов
 POST {{baseUrl}}/parse/yandex
 Content-Type: {{contentType}}
 

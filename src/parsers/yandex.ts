@@ -7,8 +7,8 @@ import { normalizeYandexDate } from "../utils/normalize-date-review.js";
 
 
 const CAPTCHA_RE = /not a robot|не робот|подтверд/i;
-const REVIEW_LIMIT = 150;
 
+const REVIEW_LIMIT = 150;
 
 class YandexParser extends AbstractParser {
     private async maybeExpandReview(block: WebElement) {
@@ -58,26 +58,31 @@ class YandexParser extends AbstractParser {
     }
 
     async getReviews() {
-        const scrollEl = await this.waitLocated(By.css('.scroll__content'), 10000);
         let reviewsContainer = await this.waitLocated(By.css('.business-reviews-card-view__reviews-container'), 10000);
-        
-        const getMaxPosSafe = async () => {
-            const cards = await reviewsContainer.findElements(By.css('.business-reviews-card-view__review'));
-            const poses = await Promise.all(cards.map((c) => c.getAttribute("aria-posinset")));
-            const nums = poses.map((p) => Number(p ?? 0)).filter((n) => Number.isFinite(n) && n > 0);
-            return nums.length ? Math.max(...nums) : 0;
-        };
       
         const seen = new Set<string>();
         const reviews: TReview[] = [];
-      
-        let stalled = 0;
+
+        const getMaxPosSafe = async () =>
+            (await this.driver.executeScript(
+              `
+              const root = arguments[0];
+              const cards = root.querySelectorAll('.business-reviews-card-view__review');
+              let max = 0;
+              for (const c of cards) {
+                const v = Number(c.getAttribute('aria-posinset') || 0);
+                if (Number.isFinite(v) && v > max) max = v;
+              }
+              return max;
+              `,
+              reviewsContainer
+            )) as number;
+
         let lastMax = await getMaxPosSafe();
       
-        while (reviews.length < REVIEW_LIMIT && stalled < 9) {
+        while (reviews.length < REVIEW_LIMIT) {
             const cards = await reviewsContainer.findElements(By.css('.business-reviews-card-view__review'));
-            
-            let added = 0;
+
             for (const card of cards) {
                 let block: WebElement | null = null;
                 
@@ -137,28 +142,29 @@ class YandexParser extends AbstractParser {
                 }
           
                 reviews.push({ name: reviewerName, rating, text, avatar, date });
-                added++;
             }
+
+            if (cards.length < 50) break;
 
             const before = lastMax;
+            let progressed = false;
 
-            if (cards.length) {
-                await this.driver.executeScript("arguments[0].scrollIntoView({block:'end'});", cards[cards.length - 1]);
-            } else {
-                await this.driver.executeScript("arguments[0].scrollTop = arguments[0].scrollHeight;", scrollEl);
+            for (let i = 0; i < 5; i++) {
+                await this.driver.executeScript(
+                    "arguments[0].scrollIntoView({block:'end'});",
+                    cards[cards.length - 1]
+                );
+                await this.driver.sleep(120);
+          
+                const after = await getMaxPosSafe();
+                if (after > before) {
+                    lastMax = after;
+                    progressed = true;
+                    break;
+                }
             }
 
-            const progressed = await this.driver
-              .wait(async () => (await getMaxPosSafe()) > before, 5000)
-              .catch(() => false);
-        
-            const after = await getMaxPosSafe();
-            lastMax = Math.max(lastMax, after);
-        
-            if (added === 0 && !progressed && after <= before) break;
-
-            if (added > 0 || progressed || after > before) stalled = 0;
-            else stalled++;
+            if (!progressed) break;
         }
       
         logger.warn(reviews.length, "Найдено отзывов");
