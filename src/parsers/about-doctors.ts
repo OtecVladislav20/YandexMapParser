@@ -64,7 +64,9 @@ class AboutDoctors extends AbstractParser {
     async getCountReviews() {
         try {
             const root = await this.waitLocated(By.css(".b-box-rating__text"), 5000);
-            return this.normalizeText(await root.getText());
+            let text = this.normalizeText(await root.getText());
+            if (!text) return null;
+            return text.split(" ")[0];
         } catch (e: unknown) {
             const msg = e instanceof Error ? e.message : String(e);
             logger.warn({ msg }, "Ошибка получения кол-ва отзывов");

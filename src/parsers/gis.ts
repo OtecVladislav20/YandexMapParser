@@ -48,8 +48,8 @@ class GisParser extends AbstractParser {
 	async getCountReviews() {
 		try {
 			let countReviews = await this.tryText(By.className("_jspzdm"));
-			return countReviews;
-
+			if (!countReviews) return null;
+			return countReviews?.split(" ")[0];
 		} catch {
 			logger.warn("Ошибка получения кол-ва отзывов");
 			return null;
@@ -153,7 +153,7 @@ class GisParser extends AbstractParser {
       			  	  	avatar = style.split("url(")[1].split(")")[0].replace(/['\"]/g, "");
       			  	}
       			} catch {
-					avatar = 'У пользователя нет фотографии';
+					avatar = null;
 				}
 
 				const key = `${reviewerName ?? ""}||${date ?? ""}||${text ?? ""}`;

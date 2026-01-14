@@ -48,7 +48,8 @@ class YandexParser extends AbstractParser {
         try {
             const root = await this.waitLocated(By.css(".business-rating-amount-view._summary"), 8000);
             let countReviews = this.normalizeText(await root.getAttribute("textContent"));
-            return countReviews;
+            if (!countReviews) return null;
+            return countReviews?.split(" ")[0];
         } catch (e: unknown) {
             const msg = e instanceof Error ? e.message : String(e);
             logger.warn({ msg }, "Ошибка получения кол-ва отзывов");
@@ -154,6 +155,8 @@ class YandexParser extends AbstractParser {
             const after = await getMaxPosSafe();
             lastMax = Math.max(lastMax, after);
         
+            if (added === 0 && !progressed && after <= before) break;
+
             if (added > 0 || progressed || after > before) stalled = 0;
             else stalled++;
         }
