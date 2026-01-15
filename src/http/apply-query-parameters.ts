@@ -1,13 +1,10 @@
-import { TReview } from "../types/type-review.js";
+import { TParseResult } from "../domain/type-parse-result.js";
+import { TReview } from "../domain/type-review.js";
 import { ResponseQueryParameters } from "./get-query-parameters.js";
 import { QueryParam } from "./query-parameters.js";
 
 
-type TData = {
-    reviews: TReview[];
-} & Record<string, unknown>;
-
-export function applyResponseOptions(data: TData, opts: ResponseQueryParameters): TData {
+export function applyResponseOptions(data: TParseResult, opts: ResponseQueryParameters): TParseResult {
     let reviews = data.reviews;
 
     reviews = filterByRating(reviews, opts[QueryParam.MinRating], opts[QueryParam.MaxRating]);
