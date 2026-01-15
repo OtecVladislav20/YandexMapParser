@@ -1,21 +1,20 @@
-import express, { type Request, type Response } from "express";
+import express from "express";
 import PQueue from "p-queue";
 import { pinoHttp } from "pino-http";
 import crypto from "node:crypto";
 import { parse as parseYaml } from "yaml";
 import { readFileSync } from "node:fs";
 import swaggerUi from "swagger-ui-express";
-
 import { ProfilePool } from "./profilePool.js";
 import { createRedis } from "./redis.js";
 import { createQueue } from "./queue.js";
 import { logger } from "./logger.js";
-import { ParserKind } from "./types/type-parser-kind.js";
-import { getQueryParameters, ResponseQueryParameters } from "./http/get-query-parameters.js";
-import { applyResponseOptions } from "./http/apply-query-parameters.js";
+import { CacheRepository } from "./repositories/redis-cache-repository.js";
+import { ParseService } from "./services/parse-service.js";
+import { ParseController } from "./controllers/parse-controller.js";
+import { createMongoDb } from "./mongo.js";
+import { SnapshotRepository } from "./repositories/mongo-snapshot-repository.js";
 
-
-type ParseRequestBody = { url?: string };
 
 const PORT = Number(process.env.PORT ?? "8000");
 const PARSER_WORKERS = Number(process.env.PARSER_WORKERS ?? "5");
@@ -37,10 +36,20 @@ const profilePool = new ProfilePool(PARSER_WORKERS);
 
 const redis = await createRedis();
 const { enqueue, queueStats } = createQueue({
-    redis,
     profilePool,
     baseLogger: logger.child({ module: "queue" }),
 });
+const handleRedis = new CacheRepository(redis, Number(process.env.CACHE_TTL_SECONDS ?? "3600"));
+
+const db = await createMongoDb();
+const handleMongo = new SnapshotRepository(db);
+
+const parseService = new ParseService({
+    cache: handleRedis,
+    snapshot: handleMongo,
+    parse: (kind, url) => enqueue(pqueue, kind, url),
+});
+const parseController = new ParseController(parseService);
 
 app.get("/", (_req, res) => res.json({ message: "Parser API запущен!" }));
 
@@ -52,49 +61,9 @@ const openapiPath = new URL("../openapi.yml", import.meta.url);
 const openapiDoc = parseYaml(readFileSync(openapiPath, "utf8"));
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(openapiDoc));
 
-async function handleParse(
-    req: Request<{}, any, ParseRequestBody>,
-    res: Response,
-    kind: ParserKind
-) {
-    const url = req.body?.url;
-
-    req.log.info({ kind, url }, "Запрос получен");
-    const started = Date.now();
-
-    if (!url || typeof url !== "string") {
-        return res.status(400).json({ success: false, data: null, error: "Некорректный url" });
-    }
-
-    const parsed = getQueryParameters(req.query);
-    if (!parsed.ok) {
-        return res.status(400).json({ success: false, data: null, error: parsed.error });
-    }
-    const opts: ResponseQueryParameters = parsed.value;
-
-    try {
-        const data = await enqueue(pqueue, kind, url);
-        const out = applyResponseOptions(data, opts);
-        req.log.info({ kind, ms: Date.now() - started }, "Запрос обработан");
-        return res.json({ success: true, data: out, error: null });
-    } catch (e: unknown) {
-        const msg = e instanceof Error ? e.message : String(e);
-        req.log.warn({ kind, err: msg, ms: Date.now() - started }, "Ошибка при обработке запроса");
-        return res.status(msg === "queue_full" ? 429 : 500).json({ success: false, data: null, error: msg });
-    }
-}
-
-app.post("/parse/yandex", (req: Request<{}, any, ParseRequestBody>, res) => {
-    void handleParse(req, res, "yandex");
-});
-
-app.post("/parse/2gis", (req: Request<{}, any, ParseRequestBody>, res) => {
-    void handleParse(req, res, "2gis");
-});
-
-app.post("/parse/doctors", (req: Request<{}, any, ParseRequestBody>, res) => {
-    void handleParse(req, res, "doctors");
-});
+app.post("/parse/yandex", parseController.handle("yandex"));
+app.post("/parse/2gis", parseController.handle("2gis"));
+app.post("/parse/doctors", parseController.handle("doctors"));
 
 app.listen(PORT, () => console.log(`API listening on :${PORT}`));
 

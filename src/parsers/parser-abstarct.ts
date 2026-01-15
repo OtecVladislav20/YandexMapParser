@@ -1,14 +1,8 @@
 import { until, type WebDriver, type WebElement, type Locator, By } from "selenium-webdriver";
-import { TReview } from "../types/type-review.js";
 import { logger } from "../logger.js";
+import { TParseResult } from "../domain/type-parse-result.js";
+import { TReview } from "../domain/type-review.js";
 
-
-export type ParseResult = {
-    name: string | null;
-    rating: string | null;
-    count_reviews: string | null;
-    reviews: TReview[];
-};
 
 export type ParserOpts = {
     timeoutMs?: number;
@@ -72,7 +66,7 @@ export abstract class AbstractParser {
     protected abstract getCountReviews(): Promise<string | null>;
     protected abstract getReviews(): Promise<TReview[]>;
 
-    async parse(url: string): Promise<ParseResult> {
+    async parse(url: string): Promise<TParseResult> {
         await this.driver.get(url);
         await this.assertNotCaptcha();
 

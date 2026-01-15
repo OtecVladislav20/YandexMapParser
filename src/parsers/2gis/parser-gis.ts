@@ -2,9 +2,9 @@ import { By, until, WebElement } from "selenium-webdriver";
 import { withDriver } from "../../selenium.js";
 import { AbstractParser } from "../parser-abstarct.js";
 import { logger } from "../../logger.js";
-import { TReview } from "../../types/type-review.js";
 import { normalize2gisDate } from "../../utils/normalize-date-review.js";
 import { Gis } from "./const-gis.js";
+import { TReview } from "../../domain/type-review.js";
 
 
 class GisParser extends AbstractParser {
