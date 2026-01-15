@@ -2,7 +2,7 @@ import type { Request, RequestHandler, Response } from "express";
 import { getQueryParameters, type ResponseQueryParameters } from "../http/get-query-parameters.js";
 import type { TParseResult } from "../domain/type-parse-result.js";
 import type { ParseService } from "../services/parse-service.js";
-import type { ParserKind } from "../types/type-parser-kind.js";
+import type { ParserKind } from "../parsers/type-parser-kind.js";
 
 
 type ParseRequestBody = { url?: string };

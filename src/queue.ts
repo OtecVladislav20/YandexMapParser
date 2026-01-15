@@ -4,7 +4,7 @@ import { cacheKey } from "./utils/generate-cache-key.js";
 import { ProfilePool } from "./profilePool.js";
 import { parseYandex } from "./parsers/yandex/parser-yandex.js";
 import { parse2gis } from "./parsers/2gis/parser-gis.js";
-import { ParserKind } from "./types/type-parser-kind.js";
+import { ParserKind } from "./parsers/type-parser-kind.js";
 import { parseAboutDoctors } from "./parsers/about-doctors/parser-about-doctors.js";
 import { TParseResult } from "./domain/type-parse-result.js";
 

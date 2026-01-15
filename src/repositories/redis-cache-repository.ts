@@ -1,13 +1,17 @@
 import type { RedisClientType, RedisModules, RedisFunctions, RedisScripts } from "redis";
 import { cacheKey } from "../utils/generate-cache-key.js";
-import type { ParserKind } from "../types/type-parser-kind.js";
+import type { ParserKind } from "../parsers/type-parser-kind.js";
 import type { TParseResult } from "../domain/type-parse-result.js";
-import { ICacheRepository } from "./interface-cache-repository.js";
 
 
 type Redis = RedisClientType<RedisModules, RedisFunctions, RedisScripts>;
 
-export class RedisCacheRepository implements ICacheRepository {
+export interface ICacheRepository {
+    get(kind: ParserKind, url: string): Promise<TParseResult | null>;
+    set(kind: ParserKind, url: string, value: TParseResult): Promise<void>;
+}
+
+export class CacheRepository implements ICacheRepository {
     constructor(private redis: Redis, private ttlSeconds: number | undefined) {}
 
     async get(kind: ParserKind, url: string): Promise<TParseResult | null> {

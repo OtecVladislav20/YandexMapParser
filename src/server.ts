@@ -1,4 +1,4 @@
-import express, { type Request, type Response } from "express";
+import express from "express";
 import PQueue from "p-queue";
 import { pinoHttp } from "pino-http";
 import crypto from "node:crypto";
@@ -9,9 +9,11 @@ import { ProfilePool } from "./profilePool.js";
 import { createRedis } from "./redis.js";
 import { createQueue } from "./queue.js";
 import { logger } from "./logger.js";
-import { RedisCacheRepository } from "./repositories/redis-cache-repository.js";
+import { CacheRepository } from "./repositories/redis-cache-repository.js";
 import { ParseService } from "./services/parse-service.js";
 import { ParseController } from "./controllers/parse-controller.js";
+import { createMongoDb } from "./mongo.js";
+import { SnapshotRepository } from "./repositories/mongo-snapshot-repository.js";
 
 
 const PORT = Number(process.env.PORT ?? "8000");
@@ -31,14 +33,20 @@ app.use(
 
 const pqueue = new PQueue({ concurrency: PARSER_WORKERS });
 const profilePool = new ProfilePool(PARSER_WORKERS);
+
 const redis = await createRedis();
 const { enqueue, queueStats } = createQueue({
     profilePool,
     baseLogger: logger.child({ module: "queue" }),
 });
-const handleRedis = new RedisCacheRepository(redis, Number(process.env.CACHE_TTL_SECONDS ?? "3600"));
+const handleRedis = new CacheRepository(redis, Number(process.env.CACHE_TTL_SECONDS ?? "3600"));
+
+const db = await createMongoDb();
+const handleMongo = new SnapshotRepository(db);
+
 const parseService = new ParseService({
     cache: handleRedis,
+    snapshot: handleMongo,
     parse: (kind, url) => enqueue(pqueue, kind, url),
 });
 const parseController = new ParseController(parseService);

@@ -21,6 +21,9 @@ services:
       REDIS_PORT: "${REDIS_PORT:-6379}"
       REDIS_PASSWORD: "${REDIS_PASSWORD:-root}"
 
+      MONGO_URI: ${MONGO_URI}
+      MONGO_DB: ${MONGO_DB:-old_data_requests}
+
       LOG_FILE: "${LOG_FILE:-/app/logs/api.log}"
     volumes:
       - ./logs:/app/logs
@@ -36,7 +39,7 @@ services:
       - "7900:7900"
     environment:
       SE_VNC_NO_PASSWORD: "${SE_VNC_NO_PASSWORD:-1}"
-      SE_VNC_PASSWORD: "${SE_VNC_PASSWORD}"
+      SE_VNC_PASSWORD: "${SE_VNC_PASSWORD:-root}"
       SE_NODE_MAX_SESSIONS: "${PARSER_WORKERS:-5}"
       SE_NODE_OVERRIDE_MAX_SESSIONS: "true"
     volumes:
@@ -53,7 +56,19 @@ services:
       - "127.0.0.1:6379:6379"
     volumes:
       - redis-data:/data
+  
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-mongo}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-root}
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
 
 volumes:
   redis-data:
+  mongo_data:
   chrome-profile:
