@@ -4,9 +4,9 @@ import type { RedisClientType, RedisModules, RedisFunctions, RedisScripts } from
 import { cacheKey } from "./cache.js";
 import { ProfilePool } from "./profilePool.js";
 import { parseYandex } from "./parsers/yandex/parser-yandex.js";
-import { parse2gis } from "./parsers/gis.js";
+import { parse2gis } from "./parsers/2gis/parser-gis.js";
 import { ParserKind } from "./types/type-parser-kind.js";
-import { parseAboutDoctors } from "./parsers/about-doctors.js";
+import { parseAboutDoctors } from "./parsers/about-doctors/parser-about-doctors.js";
 import { TReview } from "./types/type-review.js";
 
 

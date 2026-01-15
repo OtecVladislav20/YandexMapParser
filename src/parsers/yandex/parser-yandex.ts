@@ -113,6 +113,22 @@ class YandexParser extends AbstractParser {
         return true;
     }
 
+    private async scrollToNextBatch(reviewsContainer: WebElement, lastCard: WebElement): Promise<boolean> {
+        const before = await this.getMaxPosSafe(reviewsContainer);
+
+        for (let i = 0; i < 5; i++) {
+            await this.driver.executeScript(
+                "arguments[0].scrollIntoView({block:'end'});",
+                lastCard
+            );
+            await this.driver.sleep(120);
+          
+            const after = await this.getMaxPosSafe(reviewsContainer);
+            if (after > before) return true;
+        }
+        return false;
+    }
+
     private async maybeExpandReview(block: WebElement) {
         try {
             const moreBtns = await block.findElements(By.css(Yandex.moreButton));
@@ -137,22 +153,6 @@ class YandexParser extends AbstractParser {
             reviewsContainer,
             Yandex.reviewCard
         )) as number;
-    }
-
-    private async scrollToNextBatch(reviewsContainer: WebElement, lastCard: WebElement): Promise<boolean> {
-        const before = await this.getMaxPosSafe(reviewsContainer);
-
-        for (let i = 0; i < 5; i++) {
-            await this.driver.executeScript(
-                "arguments[0].scrollIntoView({block:'end'});",
-                lastCard
-            );
-            await this.driver.sleep(120);
-          
-            const after = await this.getMaxPosSafe(reviewsContainer);
-            if (after > before) return true;
-        }
-        return false;
     }
 }
 
