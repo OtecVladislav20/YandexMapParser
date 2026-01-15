@@ -13,6 +13,12 @@ paths:
           description: OK
   /parse/yandex:
     post:
+      parameters:
+        - $ref: "#/components/parameters/CountParam"
+        - $ref: "#/components/parameters/MinRatingParam"
+        - $ref: "#/components/parameters/MaxRatingParam"
+        - $ref: "#/components/parameters/DateStartParam"
+        - $ref: "#/components/parameters/DateEndParam"
       requestBody:
         required: true
         content:
@@ -26,6 +32,12 @@ paths:
               schema: { $ref: "#/components/schemas/ParseResponse" }
   /parse/2gis:
     post:
+      parameters:
+        - $ref: "#/components/parameters/CountParam"
+        - $ref: "#/components/parameters/MinRatingParam"
+        - $ref: "#/components/parameters/MaxRatingParam"
+        - $ref: "#/components/parameters/DateStartParam"
+        - $ref: "#/components/parameters/DateEndParam"
       requestBody:
         required: true
         content:
@@ -39,6 +51,12 @@ paths:
               schema: { $ref: "#/components/schemas/ParseResponse" }
   /parse/doctors:
     post:
+      parameters:
+        - $ref: "#/components/parameters/CountParam"
+        - $ref: "#/components/parameters/MinRatingParam"
+        - $ref: "#/components/parameters/MaxRatingParam"
+        - $ref: "#/components/parameters/DateStartParam"
+        - $ref: "#/components/parameters/DateEndParam"
       requestBody:
         required: true
         content:
@@ -70,3 +88,50 @@ components:
         error:
           nullable: true
           type: string
+  parameters:
+    CountParam:
+      in: query
+      name: count
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 150
+      description: Сколько отзывов вернуть в ответе (в кеше хранится полный результат).
+
+    MinRatingParam:
+      in: query
+      name: minRating
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 5
+
+    MaxRatingParam:
+      in: query
+      name: maxRating
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 5
+
+    DateStartParam:
+      in: query
+      name: dateStart
+      required: false
+      schema:
+        type: string
+        format: date
+      description: YYYY-MM-DD
+
+    DateEndParam:
+      in: query
+      name: dateEnd
+      required: false
+      schema:
+        type: string
+        format: date
+      description: YYYY-MM-DD
+

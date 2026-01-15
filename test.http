@@ -11,7 +11,7 @@ Content-Type: application/json
 
 {"url":"https://yandex.ru/maps/org/1014186377/reviews"}
 
-### Yandex: 1063218042
+### Yandex: 1063218042 - Главный тест с большим кол-вом отзывов
 POST {{baseUrl}}/parse/yandex
 Content-Type: {{contentType}}
 
@@ -19,7 +19,7 @@ Content-Type: {{contentType}}
   "url": "https://yandex.ru/maps/org/1063218042/reviews"
 }
 
-### Yandex: 60623676946
+### Yandex: 60623676946 - Малое кол-во отзывов
 POST {{baseUrl}}/parse/yandex
 Content-Type: {{contentType}}
 
@@ -108,7 +108,7 @@ Content-Type: {{contentType}}
 }
 
 ### 2gis: 1267165676605507
-POST {{baseUrl}}/parse/2gis?dateStart=2025-01-01&dateEnd=2025-12-31
+POST {{baseUrl}}/parse/2gis?dateStart=2025-01-01&dateEnd=2025-12-31&count=10&minRating=3&maxRating=5
 Content-Type: {{contentType}}
 
 {
@@ -133,4 +133,12 @@ Content-Type: {{contentType}}
 
 {
   "url": "https://prodoctorov.ru/novosibirsk/lpu/93455-dostupnaya-medicina/"
+}
+
+### Doctors: 54669-duet-klinik
+POST {{baseUrl}}/parse/doctors?dateStart=2024-01-01&dateEnd=2024-12-31
+Content-Type: {{contentType}}
+
+{
+  "url": "https://prodoctorov.ru/novosibirsk/lpu/54669-duet-klinik/"
 }

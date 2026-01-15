@@ -17,8 +17,8 @@ const RU_MONTHS: Record<string, number> = {
     декабря: 11,
 };
 
-function isoDateUTC(d: Date) {
-    return d.toISOString().slice(0, 10);
+function isoDateUTC(date: Date) {
+    return date.toISOString().slice(0, 10);
 }
 
 function addDays(date: Date, days: number) {
@@ -28,46 +28,66 @@ function addDays(date: Date, days: number) {
 }
 
 
-function parseRuDate(value: string): Date | null {
-    const date = value.trim().toLowerCase().match(/^(\d{1,2})\s+([а-яё]+)\s+(\d{4})$/i);
+function parseRuDate(value: string, now: Date): Date | null {
+    const date = value
+        .trim()
+        .toLowerCase()
+        .match(/^(\d{1,2})\s+([а-яё]+)(?:\s+(\d{4}))?$/i);
+
     if (!date) return null;
+
     const day = Number(date[1]);
     const month = RU_MONTHS[date[2]];
-    const year = Number(date[3]);
-    if (!Number.isFinite(day) || !Number.isFinite(year) || month === undefined) return null;
-    return new Date(Date.UTC(year, month, day));
+
+    const isYearMissing = !date[3];
+    let year = isYearMissing ? now.getUTCFullYear() : Number(date[3]);
+    if (!Number.isFinite(year)) return null;
+
+    let isoDate = new Date(Date.UTC(year, month, day));
+    if (Number.isNaN(isoDate.getTime())) return null;
+
+    if (isYearMissing) {
+        const tomorrow = addDays(now, 1).getTime();
+        if (isoDate.getTime() > tomorrow) {
+            year = year - 1;
+            isoDate = new Date(Date.UTC(year, month, day));
+            if (Number.isNaN(isoDate.getTime())) return null;
+        }
+    }
+
+    return isoDate;
 }
 
-function parseEnDate(raw: string, now: Date): Date | null {
-    const s = raw.trim();
-    if (!s) return null;
+function parseEnDate(value: string, now: Date): Date | null {
+    const date = value.trim();
+    if (!date) return null;
 
-    if (/\d{4}/.test(s)) {
-        const d = new Date(s);
+    if (/\d{4}/.test(date)) {
+        const d = new Date(date);
         return Number.isNaN(d.getTime()) ? null : d;
     }
 
-    const y = now.getUTCFullYear();
-    const guess = new Date(`${s}, ${y}`);
-    if (Number.isNaN(guess.getTime())) return null;
+    const yearCurrent = now.getUTCFullYear();
+    const guessDate = new Date(`${date}, ${yearCurrent}`);
+    if (Number.isNaN(guessDate.getTime())) return null;
 
     const tomorrow = addDays(now, 1).getTime();
-    if (guess.getTime() > tomorrow) {
-        const prev = new Date(`${s}, ${y - 1}`);
+    if (guessDate.getTime() > tomorrow) {
+        const prev = new Date(`${date}, ${yearCurrent - 1}`);
         return Number.isNaN(prev.getTime()) ? null : prev;
     }
-    return guess;
+    return guessDate;
 }
 
-export function parseReviewDate(raw: string | null | undefined, now = new Date()): string | null {
-    if (!raw) return null;
-    const s = raw.trim();
-    if (!s) return null;
+export function parseReviewDate(value: string | null | undefined, now = new Date()): string | null {
+    if (!value) return null;
+    const trimmed  = value.trim();
+    if (!trimmed ) return null;
 
-    const ru = parseRuDate(s);
+    const ru = parseRuDate(trimmed , now);
     if (ru) return isoDateUTC(ru);
 
-    const en = parseEnDate(s, now);
+    const en = parseEnDate(trimmed , now);
     if (en) return isoDateUTC(en);
 
     return null;
@@ -80,14 +100,14 @@ export function normalizeYandexDate(raw: string | null | undefined, now = new Da
 
 export function normalize2gisDate(raw: string | null | undefined, now = new Date()) {
     if (!raw) return null;
-    const s = raw.split(",")[0].trim().toLowerCase();
-    if (s === "сегодня") return isoDateUTC(now);
-    if (s === "вчера") return isoDateUTC(addDays(now, -1));
-    return parseReviewDate(s, now);
+    const singleWord = raw.split(",")[0].trim().toLowerCase();
+    if (singleWord === "сегодня") return isoDateUTC(now);
+    if (singleWord === "вчера") return isoDateUTC(addDays(now, -1));
+    return parseReviewDate(singleWord, now);
 }
 
 export function normalizeDoctorsDate(raw: string | null | undefined, now = new Date()) {
     if (!raw) return null;
-    const s = raw.split(" в ")[0].trim();
-    return parseReviewDate(s, now);
+    const parsedDate = raw.split(" в ")[0].trim();
+    return parseReviewDate(parsedDate, now);
 }
