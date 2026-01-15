@@ -2,6 +2,7 @@ import { Collection, Db } from "mongodb";
 import { TParseResult } from "../domain/type-parse-result.js";
 import { ParserKind } from "../parsers/type-parser-kind.js";
 import { cacheKey } from "../utils/generate-cache-key.js";
+import { logger } from "../logger.js";
 
 
 type Snapshot = {
@@ -36,5 +37,6 @@ export class SnapshotRepository implements ISnapshotRepository {
             { $set: { kind, url, data, updatedAt: new Date() } },
             { upsert: true }
         );
+        logger.info({ key: _id }, "Снимок сохранен в MongoDB");
     }
 }
