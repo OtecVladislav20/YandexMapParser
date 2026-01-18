@@ -1,0 +1,58 @@
+@use '../../assets/styles/base/mixin' as *;
+
+
+.button {
+  padding: 15rem 30rem;
+  border-radius: 100rem;
+  @include bodySb;
+  transition: all 0.3s ease;
+  text-align: center;
+
+  &Primary {
+    background-color: #2563EB;
+    color: #fff;
+    border: 1rem solid #2563EB;
+
+    &:hover {
+      border: 1rem solid #365689;
+      background: radial-gradient(235.66% 180.8% at 100% 100%, #1F3D7E 1.92%, rgba(9, 15, 27, 0.00) 100%), rgba(0, 0, 0, 0.80);
+      box-shadow: 0 4rem 60rem 0 #2D5DD2;
+    }
+  }
+
+  &Secondary {
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 1rem solid #2563EB;
+    color: #FFFFFF;
+
+    &:hover {
+      background-color: #2563EB;
+    }
+  }
+
+  &Arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10rem;
+
+    &::after {
+      content: '';
+      display: block;
+      -webkit-mask-image: url('../../assets/images/icons/button-arrow.svg');
+      mask-image: url('../../assets/images/icons/button-arrow.svg');
+      background-color: currentColor;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      mask-position: center;
+      -webkit-mask-size: contain;
+      mask-size: contain;
+      width: 24rem;
+      height: 24rem;
+    }
+  }
+
+  &Shadow {
+    box-shadow: 0 4rem 60rem rgba(45, 93, 210, 0.42);
+  }
+}

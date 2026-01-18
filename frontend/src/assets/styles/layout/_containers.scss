@@ -1,0 +1,11 @@
+@use '../base/mixin' as *;
+
+.wrapper {
+    padding: 24rem 16rem;
+    border-radius: 12rem;
+
+    @include vp-768 {
+        border-radius: 60rem;
+        padding: 100rem 40rem;
+    }
+}

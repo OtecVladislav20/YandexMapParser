@@ -1,0 +1,128 @@
+@use 'sass:string';
+@use './variables' as *;
+@use './mixin' as *;
+
+
+// Установка шрифтов
+
+@font-face {
+  font-family: "Inter";
+  src: url("../../fonts/Inter_24pt-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("../../fonts/Inter_24pt-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("../../fonts/Inter_24pt-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("../../fonts/Inter_24pt-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+// Классы для шрифтов
+h1,
+.h1 {
+    @include h1;
+}
+
+h2,
+.h2 {
+    @include h2;
+}
+
+h3,
+.h3 {
+    @include h3;
+}
+
+h4,
+.h4 {
+    @include h4;
+}
+
+h5,
+.h5 {
+    @include h5;
+}
+
+h6,
+.h6 {
+    @include h6;
+}
+
+
+.big-text-reg {
+    @include bigTextReg;
+}
+
+.big-text-sb {
+    @include bigTextSb;
+}
+
+.big-text-med {
+    @include bigTextMed;
+}
+
+
+// body - задан в body элементе
+
+.body-sb {
+    @include bodySb;
+}
+
+.body-bold {
+    @include bodyBold;
+}
+
+.body-cups-text {
+    @include bodyCupsText;
+}
+
+
+.small-text {
+    @include smallText;
+}
+
+.small-text-sb {
+    @include smallTextSb;
+}
+
+.small-text-reg {
+    @include smallTextReg;
+}
+
+.small-text-cups {
+    @include smallTextCups;
+}
+
+
+.caption {
+    @include caption;
+}
+
+.overline {
+    @include overline;
+}
+
+.link {
+    @include link;
+}
+

@@ -1,0 +1,27 @@
+@use 'sass:string';
+@use './variables' as *;
+
+
+@media (min-width: 1200px) {
+  html {
+    font-size: string.unquote($string: 'calc(100vw/1920)');
+  }
+}
+
+@media (min-width: 2000px) {
+  html {
+    font-size: string.unquote('calc(100vw/2560)');
+  }
+}
+
+@media (max-width: 768px) {
+  html {
+    font-size: string.unquote($string: 'calc(100vw/360)');
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1200px) {
+  html {
+    font-size: string.unquote($string: 'calc(100vw/1920)');
+  }
+}
