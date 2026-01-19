@@ -1,0 +1,24 @@
+.block {
+    display: flex;
+    flex-direction: column;
+    gap: 10rem;
+    padding: 20rem;
+    border-radius: 10rem;
+    color: black;
+    background-color: #fff;
+    margin-bottom: 10rem;
+
+    &__avatar {
+        width: 40rem;
+        height: 40rem;
+        min-width: 40rem;
+        min-height: 40rem;
+        border-radius: 50%;
+        overflow: hidden;
+
+        img {
+            width: 100%;
+            object-fit: cover;
+        }
+    }
+}
