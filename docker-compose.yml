@@ -1,7 +1,7 @@
 services:
   api:
     build:
-      context: .
+      context: ./backend
       target: prod
     restart: unless-stopped
     ports:
@@ -67,6 +67,17 @@ services:
       - mongo_data:/data/db
     ports:
       - "27017:27017"
+    
+  frontend:
+    build:
+      context: ./frontend
+      target: prod
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+
 
 volumes:
   redis-data:

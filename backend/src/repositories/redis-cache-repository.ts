@@ -2,6 +2,7 @@ import type { RedisClientType, RedisModules, RedisFunctions, RedisScripts } from
 import { cacheKey } from "../utils/generate-cache-key.js";
 import type { ParserKind } from "../parsers/type-parser-kind.js";
 import type { TParseResult } from "../domain/type-parse-result.js";
+import { logger } from "../logger.js";
 
 
 type Redis = RedisClientType<RedisModules, RedisFunctions, RedisScripts>;
@@ -27,6 +28,7 @@ export class CacheRepository implements ICacheRepository {
         
         if (this.ttlSeconds && Number.isFinite(this.ttlSeconds) && this.ttlSeconds > 0) {
             await this.redis.set(key, payload, { EX: this.ttlSeconds });
+            logger.info({ key, ttl: this.ttlSeconds }, "Запись в кеш с TTL");
         } else {
             await this.redis.set(key, payload);
         }

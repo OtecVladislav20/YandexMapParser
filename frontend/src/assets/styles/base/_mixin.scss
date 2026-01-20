@@ -1,0 +1,277 @@
+@use 'sass:string';
+@use './variables' as *;
+
+
+// adaptive screen
+
+
+@mixin vp-768 {
+    @media (min-width: $vp-768) {
+        @content;
+    }
+}
+
+@mixin vp-1280 {
+    @media (min-width: $vp-1280) {
+        @content;
+    }
+}
+
+@mixin vp-1920 {
+    @media (min-width: $vp-1920) {
+        @content;
+    }
+}
+
+
+// Mixin для всех шрифтов
+
+
+@mixin h1 {
+    font-family: 'Inter';
+    font-size: 24rem;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 120%;
+    color: #fff;
+    
+    @include vp-768 {
+        font-size: 64rem;
+    }
+}
+
+@mixin h2 {
+    font-family: 'Inter';
+    font-size: 24rem;
+    font-style: normal;
+    font-weight: 600;
+    color: #fff;
+    
+    @include vp-768 {
+        font-size: 52rem;
+    }
+}
+
+@mixin h3 {
+    font-family: 'Inter';
+    font-size: 20rem;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 130%;
+    color: #fff;
+
+    @include vp-768 {
+        font-size: 32rem;
+    }
+}
+
+@mixin h4 {
+    font-family: 'Inter';
+    font-size: 20rem;
+    font-style: normal;
+    font-weight: 600;
+    letter-spacing: 2rem;
+    text-transform: uppercase;
+
+    @include vp-768 {
+        font-size: 32rem;
+    }
+}
+
+@mixin h5 {
+    font-family: 'Inter';
+    font-size: 20rem;
+    font-style: normal;
+    font-weight: 600;
+    letter-spacing: 2rem;
+    text-transform: uppercase;
+
+    @include vp-768 {
+        font-size: 32rem;
+    }
+}
+
+@mixin h6 {
+    font-family: 'Inter';
+    font-size: 20rem;
+    font-style: normal;
+    font-weight: 600;
+    letter-spacing: 2rem;
+    text-transform: uppercase;
+
+    @include vp-768 {
+        font-size: 32rem;
+    }
+}
+
+@mixin bigTextSb {
+    font-family: 'Inter';
+    font-size: 14rem;
+    font-style: normal;
+    font-weight: 400;
+    
+    @include vp-768 {
+        font-size: 20rem;
+    }
+}
+
+@mixin bigTextMed {
+    font-family: 'Inter';
+    font-size: 16rem;
+    font-style: normal;
+    font-weight: 500;
+    color: #fff;
+    
+    @include vp-768 {
+        font-size: 20rem;
+    }
+}
+
+@mixin bigTextReg {
+    font-family: 'Inter';
+    font-size: 16rem;
+    font-style: normal;
+    font-weight: 400;
+
+    @include vp-768 {
+        font-size: 24rem;
+    }
+}
+
+@mixin bodyMed {
+    font-family: 'Inter';
+    font-size: 14rem;
+    font-style: normal;
+    font-weight: 400;
+    
+    @include vp-768 {
+        font-size: 20rem;
+    }
+}
+
+@mixin body {
+    font-family: 'Inter';
+    font-size: 14rem;
+    font-style: normal;
+    font-weight: 400;
+    color: #9CA3AF;
+    line-height: 150%;
+    
+    @include vp-768 {
+        font-size: 16rem;
+    }
+}
+
+@mixin bodySb {
+    font-family: 'Inter';
+    font-size: 16rem;
+    font-style: normal;
+    font-weight: 600;
+    color: #fff;
+    
+    @include vp-768 {
+        font-size: 18rem;
+    }
+}
+
+@mixin bodyBold {
+    font-family: 'Inter';
+    font-size: 14rem;
+    font-style: normal;
+    font-weight: 400;
+    
+    @include vp-768 {
+        font-size: 20rem;
+    }
+}
+
+@mixin bodyCupsText {
+    font-family: 'Inter';
+    font-size: 14rem;
+    font-style: normal;
+    font-weight: 600;
+    text-transform: uppercase;
+    
+    @include vp-768 {
+        font-size: 14rem;
+    }
+}
+
+@mixin smallText {
+    font-family: 'Inter';
+    font-size: 12rem;
+    font-style: normal;
+    font-weight: 400;
+    
+    @include vp-768 {
+        font-size: 14rem;
+    }
+}
+
+@mixin smallTextSb {
+    font-family: 'Inter';
+    font-size: 12rem;
+    font-style: normal;
+    font-weight: 400;
+    
+    @include vp-768 {
+        font-size: 14rem;
+    }
+}
+
+@mixin smallTextReg {
+    font-family: 'Inter';
+    font-size: 12rem;
+    font-style: normal;
+    font-weight: 400;
+
+    @include vp-768 {
+        font-size: 16rem;
+    }
+}
+
+@mixin smallTextCups {
+    font-family: 'Inter';
+    font-size: 12rem;
+    font-style: normal;
+    font-weight: 600;
+    text-transform: uppercase;
+    
+    @include vp-768 {
+        font-size: 16rem;
+    }
+}
+
+@mixin caption {
+    font-family: 'Inter';
+    font-size: 14rem;
+    font-style: normal;
+    font-weight: 400;
+    
+    @include vp-768 {
+        font-size: 20rem;
+    }
+}
+
+@mixin overline {
+    font-family: 'Inter';
+    font-size: 14rem;
+    font-style: normal;
+    font-weight: 400;
+    
+    @include vp-768 {
+        font-size: 20rem;
+    }
+}
+
+@mixin link {
+    font-family: 'Inter';
+    font-size: 14rem;
+    font-style: normal;
+    font-weight: 400;
+    
+    @include vp-768 {
+        font-size: 20rem;
+    }
+}
+

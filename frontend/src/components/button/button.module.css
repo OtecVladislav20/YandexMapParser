@@ -1,0 +1,62 @@
+:root {
+  --white: #fff;
+}
+
+.button {
+  padding: 15rem 30rem;
+  border-radius: 100rem;
+  font-family: "Inter";
+  font-size: 16rem;
+  font-style: normal;
+  font-weight: 600;
+  color: #fff;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+@media (min-width: 769px) {
+  .button {
+    font-size: 18rem;
+  }
+}
+.buttonPrimary {
+  background-color: #2563EB;
+  color: #fff;
+  border: 1rem solid #2563EB;
+}
+.buttonPrimary:hover {
+  border: 1rem solid #365689;
+  background: radial-gradient(235.66% 180.8% at 100% 100%, #1F3D7E 1.92%, rgba(9, 15, 27, 0) 100%), rgba(0, 0, 0, 0.8);
+  box-shadow: 0 4rem 60rem 0 #2D5DD2;
+}
+.buttonSecondary {
+  background-color: rgba(0, 0, 0, 0.8);
+  border: 1rem solid #2563EB;
+  color: #FFFFFF;
+}
+.buttonSecondary:hover {
+  background-color: #2563EB;
+}
+.buttonArrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10rem;
+}
+.buttonArrow::after {
+  content: "";
+  display: block;
+  -webkit-mask-image: url("../../assets/images/icons/button-arrow.svg");
+  mask-image: url("../../assets/images/icons/button-arrow.svg");
+  background-color: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+          mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  width: 24rem;
+  height: 24rem;
+}
+.buttonShadow {
+  box-shadow: 0 4rem 60rem rgba(45, 93, 210, 0.42);
+}/*# sourceMappingURL=button.module.css.map */
